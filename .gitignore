@@ -1,0 +1,54 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Git mergetool
+*.orig
+
+# Distribution / packaging
+.Python
+env/
+build/
+dist/
+lifepylib.egg-info/
+.eggs/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
+
+# Translations
+*.mo
+*.pot
+
+# Sphinx documentation
+doc/build/
+
+# Rope project settings
+.ropeproject
+
+# Sublime
+*.sublime-project
+*.sublime-workspace
+
+# Notebooks
+.ipynb_checkpoints
+
+# Spark
+metastore_db/
+derby.log
+
+# Test log
+*.log
