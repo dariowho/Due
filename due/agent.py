@@ -7,12 +7,14 @@ from abc import ABCMeta, abstractmethod
 import logging
 
 from due.episode import Episode
+from due.brain import CosineBrain
 
 class Agent(metaclass=ABCMeta):
 	"""
 	An Agent is any of the participants in an episode. It only models an unique
-	identity through its ID. Optionally, a human-friendly name can be provided,
-	which should not be taken into account in Machine Learning processes.
+	identity through its ID, and handles the communication on the channel level.
+	Optionally, a human-friendly name can be provided, which should not be taken
+	into account in Machine Learning processes.
 	"""
 
 	def __init__(self, id=None, name=None):
@@ -98,17 +100,27 @@ class Due(Agent):
 
 	DEFAULT_UUID = uuid.UUID('423cc038-bfe0-11e6-84d6-a434d9562d81')
 
-	def __init__(self, brain=None):
+	def __init__(self):
 		super().__init__(Due.DEFAULT_UUID, "Due")
-		self._active_episodes = {}
-		self._brain = brain
+		self._brain = CosineBrain(self)
 		self._logger = logging.getLogger(__name__ + ".Due")
 
-	def new_episode_callback(self, new_episode):
+	def learn_episodes(self, episodes):	
+		self._logger.info("Learning some episodes.")
+		self._brain.learn_episodes(episodes)
+
+	def new_episode_callback(self, episode):
 		self._logger.info("Got invited to a new episode.")
-		self._active_episodes[new_episode.id] = new_episode
+		self._brain.new_episode_callback(episode)
 
 	def utterance_callback(self, episode):
 		self._logger.info("Received utterance")
 		self._logger.info("This is where I should do something with the Brain...")
-		episode.add_utterance(self, "No brain yet: this is just a default answer...")
+		self._brain.utterance_callback(episode)
+
+	def save(self):
+		return {
+			'id': self.id,
+			'name': self.name,
+			'brain': self._brain.save()
+		}
