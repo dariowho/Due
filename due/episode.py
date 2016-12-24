@@ -3,6 +3,7 @@ import uuid
 import copy
 from collections import namedtuple
 from datetime import datetime
+from enum import Enum
 
 UTTERANCE_LABEL = 'utterance'
 
@@ -13,24 +14,38 @@ class Episode(object):
 
 	def __init__(self, starter_agent, invited_agent):
 		self._logger = logging.getLogger(__name__ + ".Episode")
-		self._events = []
 		self._starter = starter_agent
 		self._invited = invited_agent
 		self.id = uuid.uuid1()
+		self.events = []
 
 	def add_utterance(self, agent, sentence):
 		self._logger.info("New utterance by " + str(agent) + ": '" + sentence + "'")
-		utterance = Event(UTTERANCE_LABEL, datetime.now(), agent, sentence)
-		self._events.append(utterance)
+		utterance = Event(Event.Type.Utterance, datetime.now(), agent, sentence)
+		self.events.append(utterance)
 		for a in self._other_agents(agent):
 			self._logger.info("Notifying Agent " + str(a) + ".")
 			a.utterance_callback(self)
+
+	def last_event(self, event_type=None):
+		"""
+		Returns the last event in the Episode. Optionally, events can be filtered
+		by type.
+
+		:param event_type: an event type, or a collection of types
+		:type event_type: :class:`Event.Type` or list of :class:`Event.Type`
+		"""
+		event_type = event_type if not isinstance(event_type, Event.Type) else (event_type,)
+		for e in reversed(self.events):
+			if event_type is None or e.type in event_type:
+				return e
+		return None
 
 	def save(self):
 		return {
 			'id': self.id,
 			'agents': [self._starter.id, self._invited.id],
-			'events': [e.save() for e in self._events]
+			'events': [e.save() for e in self.events]
 		}
 
 	def _other_agents(self, agent):
@@ -42,6 +57,11 @@ class Event(EventTuple):
 	An Event can be an Utterance or an Action. Note that only Utterances are
 	currently modeled.
 	"""
+
+	class Type(Enum):
+		Utterance = "utterance"
+		Action = "action"
+
 	def save(self):
-		result = self._replace(agent=self.agent.id)
+		result = self._replace(type=self.type.value, agent=self.agent.id)
 		return list(result)
