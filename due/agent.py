@@ -47,6 +47,36 @@ class Agent(metaclass=ABCMeta):
 		"""
 		pass
 
+	@abstractmethod
+	def leave_callback(self, episode, agent):
+		"""
+		When one of the Agents in the episode leaves, the Episode will call this
+		method on the other participants to notify the change.
+		"""
+		pass
+
+	def say(self, sentence, episode):
+		"""
+		Say the given sentence in the given Episode. By default, it just updates
+		the Episode, but you may want to extend the implementation with some
+		output operation (eg. printing on screen, broadcasing to a jabber chat...)
+		
+		:param sentence: A sentence
+		:type sentence: :class:`str`
+		:param episode: An Episode
+		:type episode: :class:`due.episode.Episode`
+		"""
+		episode.add_utterance(self, sentence)
+
+	def leave(self, episode):
+		"""
+		Leaves the given episode.
+
+		:param episode: One of the Agent's active episodes
+		:type episode: :class:`due.episode.Episode`
+		"""
+		episode.leave(self)
+
 	def __str__(self):
 		name = self.name if self.name is not None else self.id
 		return "<Agent: " + name + ">"
@@ -75,23 +105,15 @@ class HumanAgent(Agent):
 		other.new_episode_callback(result)
 		return result
 
-	def say(self, sentence, episode):
-		"""
-		Adds the given sentence to the given Episode
-
-		:param sentence: A sentence
-		:type sentence: :class:`str`
-		:param episode: An Episode
-		:type episode: :class:`due.episode.Episode`
-		"""
-		episode.add_utterance(self, sentence)
-
 	def new_episode_callback(self, new_episode):
 		self._logger.info("New episode callback: " + str(new_episode))
 		self._active_episodes[new_episode.id] = new_episode
 
 	def utterance_callback(self, episode):
 		self._logger.info("Utterance received.")
+
+	def leave_callback(self, episode, agent):
+		self._logger.info("Agent %s left the episode." % agent)
 
 class Due(Agent):
 	"""
@@ -101,7 +123,7 @@ class Due(Agent):
 	DEFAULT_UUID = uuid.UUID('423cc038-bfe0-11e6-84d6-a434d9562d81')
 
 	def __init__(self):
-		super().__init__(Due.DEFAULT_UUID, "Due")
+		Agent.__init__(self, Due.DEFAULT_UUID, "Due")
 		self._brain = CosineBrain(self)
 		self._logger = logging.getLogger(__name__ + ".Due")
 
@@ -115,8 +137,11 @@ class Due(Agent):
 
 	def utterance_callback(self, episode):
 		self._logger.info("Received utterance")
-		self._logger.info("This is where I should do something with the Brain...")
 		self._brain.utterance_callback(episode)
+
+	def leave_callback(self, episode, agent):
+		self._logger.info("Agent %s left the episode." % agent)
+		self._brain.leave_callback(episode, agent)
 
 	def save(self):
 		return {

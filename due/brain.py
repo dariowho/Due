@@ -30,6 +30,10 @@ class Brain(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
+	def leave_callback(self, episode, agent):
+		pass
+
+	@abstractmethod
 	def save(self):
 		pass
 
@@ -76,9 +80,14 @@ class CosineBrain(Brain):
 		answers = self._answers(episode)
 		for a in answers:
 			if a.type == Event.Type.Utterance:
-				episode.add_utterance(self._agent, a.payload)
+				self._agent.say(a.payload, episode)
 		if len(answers) == 0:
 			self._logger.info("No answers found.")
+
+	def leave_callback(self, episode, agent):
+		# TODO: should implement some learning logic (eg. learn only if similar 
+		#       enough to another episode)
+		self.learn_episode(episode)
 
 	def _answers(self, episode):
 		last_utterance = episode.last_event(Event.Type.Utterance)

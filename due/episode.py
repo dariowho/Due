@@ -20,12 +20,19 @@ class Episode(object):
 		self.events = []
 
 	def add_utterance(self, agent, sentence):
-		self._logger.info("New utterance by " + str(agent) + ": '" + sentence + "'")
+		self._logger.info("New utterance by %s: '%s'" % (agent, sentence))
 		utterance = Event(Event.Type.Utterance, datetime.now(), agent, sentence)
 		self.events.append(utterance)
 		for a in self._other_agents(agent):
-			self._logger.info("Notifying Agent " + str(a) + ".")
+			self._logger.info("Notifying Agent %s." % a)
 			a.utterance_callback(self)
+
+	def leave(self, agent):
+		self._logger.info("Agent %s left." % agent)
+		event = Event(Event.Type.Leave, datetime.now(), agent, None)
+		for a in self._other_agents(agent):
+			self._logger.info("Notifying Agent %s." % a)
+			a.leave_callback(self, agent)
 
 	def last_event(self, event_type=None):
 		"""
@@ -60,6 +67,7 @@ class Event(EventTuple):
 
 	class Type(Enum):
 		Utterance = "utterance"
+		Leave = "leave"
 		Action = "action"
 
 	def save(self):
