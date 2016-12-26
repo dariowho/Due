@@ -81,6 +81,8 @@ class CosineBrain(Brain):
 		for a in answers:
 			if a.type == Event.Type.Utterance:
 				self._agent.say(a.payload, episode)
+			if a.type == Event.Type.Action:
+				self._agent.do(a.payload, episode)
 		if len(answers) == 0:
 			self._logger.info("No answers found.")
 
@@ -91,16 +93,42 @@ class CosineBrain(Brain):
 
 	def _answers(self, episode):
 		last_utterance = episode.last_event(Event.Type.Utterance)
+		self._logger.info("Matching utterance: '%s'" % last_utterance.payload)
 		best_score = 0
+		best_episode = None
+		best_index = None
 		result = []
 		for pe in self._past_episodes:
-			scores = [_cosine_similarity(last_utterance.payload, u.payload) for u in pe.events if u.type == Event.Type.Utterance]
+			scores = [_cosine_similarity(last_utterance.payload, u.payload) if u.type == Event.Type.Utterance else 0 for u in pe.events]
 			max_score = max(scores)
 			max_index = scores.index(max_score)
 			if max_score > best_score:
-				self._logger.info("Best match: '" + pe.events[max_index].payload)
-				result = [pe.events[max_index+1]] if max_index < len(pe.events)-1 else result
-		return result
+				self._logger.info("Best match so far: '%s'. Score: %s" % (pe.events[max_index].payload, max_score))
+				# result = [pe.events[max_index+1]] if max_index < len(pe.events)-1 else result
+				best_score = max_score
+				best_episode = pe
+				best_index = max_index
+
+		return CosineBrain._get_answers_to(best_episode, best_index)
+
+	@staticmethod
+	def _get_answers_to(episode, index):
+		result = []
+		if episode is not None and index is not None:
+			events = episode.events
+			last_index = len(events)-1
+			questioning_agent = episode.events[index].agent
+			i = index + 1
+			# Skip other utterances from same Agent
+			while i < last_index and events[i].agent == questioning_agent:
+				i += 1
+			# Include all replies
+			if i < last_index:
+				answering_agent = events[i].agent
+				while events[i].agent == answering_agent:
+					result.append(events[i])
+					i += 1
+			return result
 
 	def save(self):
 		return {

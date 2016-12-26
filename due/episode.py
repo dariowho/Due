@@ -1,3 +1,5 @@
+from due.util import full_class_name
+
 import logging
 import uuid
 import copy
@@ -24,14 +26,22 @@ class Episode(object):
 		utterance = Event(Event.Type.Utterance, datetime.now(), agent, sentence)
 		self.events.append(utterance)
 		for a in self._other_agents(agent):
-			self._logger.info("Notifying Agent %s." % a)
+			self._logger.debug("Notifying Agent %s." % a)
 			a.utterance_callback(self)
+
+	def add_action(self, agent, action):
+		self._logger.info("New action by %s: '%s'" % (agent, action))
+		action_event = Event(Event.Type.Action, datetime.now(), agent, action)
+		self.events.append(action_event)
+		for a in self._other_agents(agent):
+			self._logger.debug("Notifying Agent %s." % a)
+			a.action_callback(self)
 
 	def leave(self, agent):
 		self._logger.info("Agent %s left." % agent)
 		event = Event(Event.Type.Leave, datetime.now(), agent, None)
 		for a in self._other_agents(agent):
-			self._logger.info("Notifying Agent %s." % a)
+			self._logger.debug("Notifying Agent %s." % a)
 			a.leave_callback(self, agent)
 
 	def last_event(self, event_type=None):
@@ -42,7 +52,12 @@ class Episode(object):
 		:param event_type: an event type, or a collection of types
 		:type event_type: :class:`Event.Type` or list of :class:`Event.Type`
 		"""
+		self._logger.info(event_type)
+		self._logger.info(type(event_type))
+		self._logger.info(isinstance(event_type, Event.Type))
 		event_type = event_type if not isinstance(event_type, Event.Type) else (event_type,)
+		self._logger.info(event_type)
+		self._logger.info(type(event_type))
 		for e in reversed(self.events):
 			if event_type is None or e.type in event_type:
 				return e
@@ -51,7 +66,7 @@ class Episode(object):
 	def save(self):
 		return {
 			'id': self.id,
-			'agents': [self._starter.id, self._invited.id],
+			'agents': [str(self._starter.id), str(self._invited.id)],
 			'events': [e.save() for e in self.events]
 		}
 
@@ -72,4 +87,6 @@ class Event(EventTuple):
 
 	def save(self):
 		result = self._replace(type=self.type.value, agent=self.agent.id)
+		if self.type == Event.Type.Action:
+			result = result._replace(payload=full_class_name(self.payload))
 		return list(result)

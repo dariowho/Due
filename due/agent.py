@@ -48,6 +48,14 @@ class Agent(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
+	def action_callback(self, episode):
+		"""
+		When one of the agents in the episode performs an action, the Episode
+		will call this method on the other Agents to notify the change.
+		"""
+		pass
+
+	@abstractmethod
 	def leave_callback(self, episode, agent):
 		"""
 		When one of the Agents in the episode leaves, the Episode will call this
@@ -67,6 +75,16 @@ class Agent(metaclass=ABCMeta):
 		:type episode: :class:`due.episode.Episode`
 		"""
 		episode.add_utterance(self, sentence)
+
+	def do(self, action, episode):
+		"""
+		Performs the given action in the given Episode
+
+		:param action: An Action
+		:type action: :class:`due.action.Action`
+		"""
+		action.run()
+		episode.add_action(self, action)
 
 	def leave(self, episode):
 		"""
@@ -110,10 +128,13 @@ class HumanAgent(Agent):
 		self._active_episodes[new_episode.id] = new_episode
 
 	def utterance_callback(self, episode):
-		self._logger.info("Utterance received.")
+		self._logger.debug("Utterance received.")
+
+	def action_callback(self, episode):
+		self._logger.debug("Action received.")
 
 	def leave_callback(self, episode, agent):
-		self._logger.info("Agent %s left the episode." % agent)
+		self._logger.debug("Agent %s left the episode." % agent)
 
 class Due(Agent):
 	"""
@@ -136,11 +157,14 @@ class Due(Agent):
 		self._brain.new_episode_callback(episode)
 
 	def utterance_callback(self, episode):
-		self._logger.info("Received utterance")
+		self._logger.debug("Received utterance")
 		self._brain.utterance_callback(episode)
 
+	def action_callback(self, episode):
+		self._logger.debug("Received action")
+
 	def leave_callback(self, episode, agent):
-		self._logger.info("Agent %s left the episode." % agent)
+		self._logger.debug("Agent %s left the episode." % agent)
 		self._brain.leave_callback(episode, agent)
 
 	def save(self):
