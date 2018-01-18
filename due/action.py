@@ -6,9 +6,8 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 
 class Action(metaclass=ABCMeta):
 
-	@staticmethod
 	@abstractmethod
-	def run():
+	def run(self):
 		"""
 		This method will be invoked when the Agent issues the Action in a
 		conversation
@@ -30,8 +29,7 @@ class ExampleAction(Action):
 	FILENAME = "DUE_EXAMPLE_ACTION"
 	CONTENT = "Due was here..."
 
-	@staticmethod
-	def run():
+	def run(self):
 		home = os.path.expanduser("~")
 		with open(os.path.join(home, ExampleAction.FILENAME), "w") as f:
 			f.write(str(datetime.now()))

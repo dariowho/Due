@@ -1,4 +1,5 @@
 from due.episode import Event
+from due.util import dynamic_import
 
 from abc import ABCMeta, abstractmethod
 
@@ -38,9 +39,9 @@ class Brain(metaclass=ABCMeta):
 		pass
 
 	@staticmethod
-	@abstractmethod
-	def load(self, saved_brain, agent):
-		pass
+	def load(saved_brain, agent):
+		class_ = dynamic_import(saved_brain['class'])
+		return class_(agent, saved_brain['data'])
 
 #
 # Cosine Brain (Baseline)
@@ -64,11 +65,11 @@ class CosineBrain(Brain):
 	"""A baseline Brain model that just uses a vetor similarity measure to pick
 	appropriate answers to incoming utterances.
 	"""
-	def __init__(self, agent):
+	def __init__(self, agent, data=None):
 		self._logger = logging.getLogger(__name__ + ".CosineBrain")
 		super().__init__(agent)
 		self._active_episodes = {}
-		self._past_episodes = []
+		self._past_episodes = data['past_episodes'] if data else []
 
 	def learn_episodes(self, episodes):
 		self._past_episodes.extend(episodes)
@@ -132,11 +133,8 @@ class CosineBrain(Brain):
 
 	def save(self):
 		return {
-			'past_episodes': [e.save() for e in self._past_episodes]
+			'class': 'due.brain.CosineBrain',
+			'data': {
+				'past_episodes': [e.save() for e in self._past_episodes]
+			}
 		}
-
-	@staticmethod
-	def load(saved_brain, agent):
-		result = CosineBrain(agent)
-		result._past_episodes = saved_brain['past_episodes']
-		return result

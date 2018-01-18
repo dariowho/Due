@@ -11,7 +11,7 @@ __pycache__/
 env/
 build/
 dist/
-lifepylib.egg-info/
+due.egg-info/
 .eggs/
 
 # Installer logs

@@ -7,6 +7,7 @@ from abc import ABCMeta, abstractmethod
 import logging
 
 from due.episode import Episode
+from due.brain import Brain
 from due.brain import CosineBrain
 
 class Agent(metaclass=ABCMeta):
@@ -21,12 +22,14 @@ class Agent(metaclass=ABCMeta):
 		self.id = id if id is not None else uuid.uuid1()
 		self.name = name
 
+	@abstractmethod
 	def save(self):
-		return {'id': self.id}
+		pass
 
 	@staticmethod
+	@abstractmethod
 	def load(exported_agent):
-		return Agent(exported_agent['id'])
+		pass
 
 	@abstractmethod
 	def new_episode_callback(self, new_episode):
@@ -110,6 +113,13 @@ class HumanAgent(Agent):
 		self._active_episodes = {}
 		self._logger = logging.getLogger(__name__ + '.HumanAgent')
 
+	def save(self):
+		return {'id': self.id, 'name': self.name}
+
+	@staticmethod
+	def load(saved_agent):
+		return HumanAgent(**saved_agent)
+
 	def start_episode(self, other):
 		"""
 		Starts a conversational Episode with another Agent.
@@ -136,16 +146,21 @@ class HumanAgent(Agent):
 	def leave_callback(self, episode, agent):
 		self._logger.debug("Agent %s left the episode." % agent)
 
+DEFAULT_DUE_UUID = uuid.UUID('423cc038-bfe0-11e6-84d6-a434d9562d81')
+
 class Due(Agent):
 	"""
 	Main entry point for Due. Should be instantiated with a Brain
 	"""
 
-	DEFAULT_UUID = uuid.UUID('423cc038-bfe0-11e6-84d6-a434d9562d81')
+	def __init__(self, id=DEFAULT_DUE_UUID, brain=None):
+		Agent.__init__(self, id, "Due")
+		
+		if isinstance(brain, dict):
+			brain = Brain.load(brain, self)
 
-	def __init__(self):
-		Agent.__init__(self, Due.DEFAULT_UUID, "Due")
-		self._brain = CosineBrain(self)
+		brain = brain if brain is not None else CosineBrain(self)
+		self._brain = brain
 		self._logger = logging.getLogger(__name__ + ".Due")
 
 	def learn_episodes(self, episodes):	
@@ -166,6 +181,10 @@ class Due(Agent):
 	def leave_callback(self, episode, agent):
 		self._logger.debug("Agent %s left the episode." % agent)
 		self._brain.leave_callback(episode, agent)
+
+	@staticmethod
+	def load(saved_agent):
+		return Due(saved_agent['id'], saved_agent['brain'])
 
 	def save(self):
 		return {
