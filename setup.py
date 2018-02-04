@@ -31,7 +31,7 @@ setup(
     # long_description=long_description,
 
     # The project's main homepage.
-    # url='https://github.com/pypa/sampleproject',
+    url='https://github.com/dario-chiappetta/Due',
 
     # Author details
     author='Dario Chiappetta',
@@ -84,7 +84,7 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     # install_requires=['gensim', 'shorttext'],
-    install_requires=['future', 'six', 'numpy', 'scipy', 'sleekxmpp', 'sklearn', 'nltk'],
+    install_requires=['future', 'six', 'numpy', 'scipy', 'sleekxmpp', 'sklearn', 'nltk', 'sleekxmpp'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,

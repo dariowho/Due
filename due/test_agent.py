@@ -1,7 +1,10 @@
 import unittest
 
+from datetime import datetime
+
 from due.agent import *
 from due.action import Action
+from due.event import Event
 
 class RecordedAction(Action):
 	def __init__(self):
@@ -14,6 +17,41 @@ class RecordedAction(Action):
 class TestAgent(unittest.TestCase):
 
 	def test_agent_episode(self):
+		ha_alice = HumanAgent(name='Alice')
+		ha_bob = HumanAgent(name='Bob')
+		e = ha_alice.start_episode(ha_bob)
+		self.assertEqual(len(e.events), 0)
+
+		utterance = Event(Event.Type.Utterance, datetime.now(), ha_alice, "alice1")
+		ha_alice.act_events([utterance], e)
+		self.assertEqual(e.events[-1].payload, 'alice1')
+
+		utterance = Event(Event.Type.Utterance, datetime.now(), ha_alice, "alice2")
+		ha_alice.act_events([utterance], e)
+		self.assertEqual(len(e.events), 2)
+		self.assertEqual(e.events[-1].payload, 'alice2')
+
+		utterance = Event(Event.Type.Utterance, datetime.now(), ha_bob, "bob1")
+		ha_bob.act_events([utterance], e)
+		self.assertEqual(len(e.events), 3)
+		self.assertEqual(e.events[-1].payload, 'bob1')
+
+		action = Event(Event.Type.Action, datetime.now(), ha_alice, RecordedAction())
+		ha_alice.act_events([action], e)
+		self.assertTrue(action.payload.done)
+		self.assertEqual(len(e.events), 4)
+		self.assertTrue(e.events[-1].payload is action.payload)
+
+		action = RecordedAction()
+		events = [Event(Event.Type.Utterance, datetime.now(), ha_alice, "alice3"), Event(Event.Type.Action, datetime.now(), ha_alice, action)]
+		ha_alice.act_events(events, e)
+		self.assertTrue(action.done)
+		self.assertEqual(len(e.events), 6)
+		self.assertEqual(e.events[-2].payload, 'alice3')
+		self.assertTrue(e.events[-1].payload is action)
+
+
+	def test_agent_episode_deprecated(self):
 		ha_alice = HumanAgent(name='Alice')
 		ha_bob = HumanAgent(name='Bob')
 		e = ha_alice.start_episode(ha_bob)
@@ -36,7 +74,7 @@ class TestAgent(unittest.TestCase):
 		self.assertTrue(action.done)
 		self.assertEqual(len(e.events), 4)
 		self.assertTrue(e.events[-1].payload is action)
-
+		
 		ha_alice.leave(e)
 
 

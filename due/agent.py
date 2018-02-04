@@ -7,6 +7,7 @@ from abc import ABCMeta, abstractmethod
 import logging
 
 from due.episode import Episode
+from due.event import Event
 from due.brain import Brain
 from due.brain import CosineBrain
 
@@ -42,6 +43,19 @@ class Agent(metaclass=ABCMeta):
 		"""
 		pass
 
+	def event_callback(self, event, episode):
+		"""
+		When an Event is added to an Episode the Episode notifies the Agents 
+		through this method
+		"""
+		if event.type == Event.Type.Utterance:
+			self.utterance_callback(episode)
+		elif event.type == Event.Type.Action:
+			self.action_callback(episode)
+		elif event.type == Event.Type.Leave:
+			self.leave_callback(episode)
+
+
 	@abstractmethod
 	def utterance_callback(self, episode):
 		"""
@@ -65,6 +79,23 @@ class Agent(metaclass=ABCMeta):
 		method on the other participants to notify the change.
 		"""
 		pass
+
+	def act_events(self, events, episode):
+		"""
+		Acts a sequence of Events in the given Episode. An Event can be either 
+		an Utterance (will be passed to `Agent.say()`) or an Action (will be 
+		passed to `Agent.do()`)
+
+		:param events: a list of Events
+		:type events: `list` of :class:`due.episode.Event`
+		:param episode: an Episode
+		:type episode: :class:`due.episode.Episode`
+		"""
+		for e in events:
+			if e.type == Event.Type.Action:
+				e.payload.run()
+
+			episode.add_event(self, e)
 
 	def say(self, sentence, episode):
 		"""
@@ -157,9 +188,9 @@ class Due(Agent):
 		Agent.__init__(self, id, "Due")
 		
 		if isinstance(brain, dict):
-			brain = Brain.load(brain, self)
+			brain = Brain.load(brain)
 
-		brain = brain if brain is not None else CosineBrain(self)
+		brain = brain if brain is not None else CosineBrain()
 		self._brain = brain
 		self._logger = logging.getLogger(__name__ + ".Due")
 
@@ -173,7 +204,8 @@ class Due(Agent):
 
 	def utterance_callback(self, episode):
 		self._logger.debug("Received utterance")
-		self._brain.utterance_callback(episode)
+		answers = self._brain.utterance_callback(episode)
+		self.act_events(answers, episode)
 
 	def action_callback(self, episode):
 		self._logger.debug("Received action")

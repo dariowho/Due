@@ -1,5 +1,6 @@
 from due.agent import Due, HumanAgent
 from due.episode import Episode
+from due.event import Event
 
 import logging
 import uuid
@@ -54,7 +55,24 @@ class DueBot(Due, ClientXMPP):
 				self._current_episode = Episode(human_agent, self)
 			self._current_episode.add_utterance(human_agent, msg['body'])
 
+	def act_events(self, events, episode):
+		for e in events:
+			if e.type == Event.Type.Action:
+				e.payload.run()
+			elif e.type == Event.Type.Utterance:
+				if self._last_message is None:
+					self._logger.warning("Could not send message '"+e.payload+"' because \
+						no last message is set. This is not supposed to happen.")
+					return
+				self._last_message.reply(e.payload).send()
+
+			episode.add_event(self, e)
+
 	def say(self, sentence, episode):
+		"""
+		Deprecated!
+		"""
+		self._logger.warn('deprecated use of DueBot.say(). Please use DueBot.act_events() instead.')
 		if self._last_message is None:
 			self._logger.warning("Could not send message '"+sentence+"' because \
 				no last message is set. This is not supposed to happen.")

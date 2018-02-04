@@ -12,9 +12,6 @@ class Brain(metaclass=ABCMeta):
 	predictions on present ones.
 	"""
 
-	def __init__(self, agent):
-		self._agent = agent
-
 	@abstractmethod
 	def learn_episodes(self, episodes):
 		pass
@@ -39,9 +36,9 @@ class Brain(metaclass=ABCMeta):
 		pass
 
 	@staticmethod
-	def load(saved_brain, agent):
+	def load(saved_brain):
 		class_ = dynamic_import(saved_brain['class'])
-		return class_(agent, saved_brain['data'])
+		return class_(saved_brain['data'])
 
 #
 # Cosine Brain (Baseline)
@@ -65,9 +62,9 @@ class CosineBrain(Brain):
 	"""A baseline Brain model that just uses a vetor similarity measure to pick
 	appropriate answers to incoming utterances.
 	"""
-	def __init__(self, agent, data=None):
+	def __init__(self, data=None):
 		self._logger = logging.getLogger(__name__ + ".CosineBrain")
-		super().__init__(agent)
+		super().__init__()
 		self._active_episodes = {}
 		self._past_episodes = data['past_episodes'] if data else []
 
@@ -79,13 +76,11 @@ class CosineBrain(Brain):
 
 	def utterance_callback(self, episode):
 		answers = self._answers(episode)
-		for a in answers:
-			if a.type == Event.Type.Utterance:
-				self._agent.say(a.payload, episode)
-			if a.type == Event.Type.Action:
-				self._agent.do(a.payload, episode)
+
 		if len(answers) == 0:
 			self._logger.info("No answers found.")
+
+		return answers
 
 	def leave_callback(self, episode, agent):
 		# TODO: should implement some learning logic (eg. learn only if similar 
@@ -127,9 +122,9 @@ class CosineBrain(Brain):
 			if i < last_index:
 				answering_agent = events[i].agent
 				while events[i].agent == answering_agent:
-					result.append(events[i])
+					result.append(events[i].clone())
 					i += 1
-			return result
+		return result
 
 	def save(self):
 		return {
