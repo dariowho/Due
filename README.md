@@ -48,7 +48,7 @@ bot.process(block=True)
 ```
 
 ## Unit testing
-Unit tests are being written. You can run the test suite as follows:
+Due comes with a suite of unit tests. You can run them as follows:
 
     $ python setup.py nosetests
 
