@@ -7,7 +7,7 @@ Due is an autonomous conversational agent built with these goals in mind:
 * Modular architecture: different Natural Language Understanding (NLU) models can be and integrated in the agents
 
 ## Work in progress!
-Thanks for stopping by, but be patient: it will take a while before the magic happens... Meanwhile, feel free to get in touch at dario DOT chi AT inventati DOT org
+Thanks for stopping by, but be patient: it will take a while before the magic happens... Meanwhile, feel free to get in touch at dario DOT chi AT inventati DOT org, or check on the latest development updates here: https://github.com/dario-chiappetta/Due/projects.
 
 ## Setup
 **Warning**: this software is not production ready yet, good chanches are it doesn't make sense for you to try it out.
