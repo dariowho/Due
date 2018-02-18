@@ -3,7 +3,7 @@ Due is a learning, modular, action-oriented dialogue agent.
 """
 import uuid
 from abc import ABCMeta, abstractmethod
-
+from datetime import datetime
 import logging
 
 from due.episode import LiveEpisode
@@ -73,7 +73,7 @@ class Agent(metaclass=ABCMeta):
 		pass
 
 	@abstractmethod
-	def leave_callback(self, episode, agent):
+	def leave_callback(self, episode):
 		"""
 		When one of the Agents in the episode leaves, the Episode will call this
 		method on the other participants to notify the change.
@@ -108,7 +108,8 @@ class Agent(metaclass=ABCMeta):
 		:param episode: An Episode
 		:type episode: :class:`due.episode.Episode`
 		"""
-		episode.add_utterance(self, sentence)
+		utterance_event = Event(Event.Type.Utterance, datetime.now(), self.id, sentence)
+		episode.add_event(self, utterance_event)
 
 	def do(self, action, episode):
 		"""
@@ -118,7 +119,8 @@ class Agent(metaclass=ABCMeta):
 		:type action: :class:`due.action.Action`
 		"""
 		action.run()
-		episode.add_action(self, action)
+		action_event = Event(Event.Type.Action, datetime.now(), self.id, action)
+		episode.add_event(self, action_event)
 
 	def leave(self, episode):
 		"""
@@ -127,7 +129,8 @@ class Agent(metaclass=ABCMeta):
 		:param episode: One of the Agent's active episodes
 		:type episode: :class:`due.episode.Episode`
 		"""
-		episode.leave(self)
+		leave_event = Event(Event.Type.Leave, datetime.now(), self.id, None)
+		episode.add_event(self, leave_event)
 
 	def __str__(self):
 		name = self.name if self.name is not None else self.id
@@ -174,7 +177,8 @@ class HumanAgent(Agent):
 	def action_callback(self, episode):
 		self._logger.debug("Action received.")
 
-	def leave_callback(self, episode, agent):
+	def leave_callback(self, episode):
+		agent = episode.last_event(Event.Type.Leave).agent
 		self._logger.debug("Agent %s left the episode." % agent)
 
 DEFAULT_DUE_UUID = uuid.UUID('423cc038-bfe0-11e6-84d6-a434d9562d81')
@@ -210,7 +214,8 @@ class Due(Agent):
 	def action_callback(self, episode):
 		self._logger.debug("Received action")
 
-	def leave_callback(self, episode, agent):
+	def leave_callback(self, episode):
+		agent = episode.last_event(Event.Type.Leave).agent
 		self._logger.debug("Agent %s left the episode." % agent)
 		self._brain.leave_callback(episode, agent)
 

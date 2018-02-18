@@ -83,7 +83,7 @@ class CosineBrain(Brain):
 
 		return answers
 
-	def leave_callback(self, episode, agent):
+	def leave_callback(self, episode):
 		# TODO: should implement some learning logic (eg. learn only if similar 
 		#       enough to another episode)
 		self.learn_episode(episode)

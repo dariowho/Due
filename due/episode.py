@@ -68,36 +68,6 @@ class LiveEpisode(Episode):
 		for a in self._other_agents(agent):
 			self._logger.debug("Notifying Agent %s." % a)
 			a.event_callback(event, self)
-			# TODO: comlete (implement event_callback in agent etc.)
 
 	def _other_agents(self, agent):
 		return [self._starter] if agent == self._invited else [self._invited]
-
-	#
-	# Deprecated Event handling
-	#
-
-	def add_utterance(self, agent, sentence):
-		self._logger.warn('deprecated: please update your code to use Episode.add_event() instead.')
-		self._logger.info("New utterance by %s: '%s'" % (agent, sentence))
-		utterance = Event(Event.Type.Utterance, datetime.now(), agent.id, sentence)
-		self.events.append(utterance)
-		for a in self._other_agents(agent):
-			self._logger.debug("Notifying Agent %s." % a)
-			a.utterance_callback(self)
-
-	def add_action(self, agent, action):
-		self._logger.warn('deprecated: please update your code to use Episode.add_event() instead.')
-		self._logger.info("New action by %s: '%s'" % (agent, action))
-		action_event = Event(Event.Type.Action, datetime.now(), agent.id, action)
-		self.events.append(action_event)
-		for a in self._other_agents(agent):
-			self._logger.debug("Notifying Agent %s." % a)
-			a.action_callback(self)
-
-	def leave(self, agent):
-		self._logger.info("Agent %s left." % agent)
-		event = Event(Event.Type.Leave, datetime.now(), agent.id, None)
-		for a in self._other_agents(agent):
-			self._logger.debug("Notifying Agent %s." % a)
-			a.leave_callback(self, agent)
