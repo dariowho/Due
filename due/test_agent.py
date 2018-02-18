@@ -6,16 +6,8 @@ import os
 
 from due.persistence import serialize, deserialize
 from due.agent import *
-from due.action import Action
+from due.action import Action, RecordedAction
 from due.event import Event
-
-class RecordedAction(Action):
-	def __init__(self):
-		self.done = False
-
-	def run(self):
-		self.done = True
-		return True
 
 class TestAgent(unittest.TestCase):
 

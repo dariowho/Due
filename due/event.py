@@ -4,6 +4,8 @@ from datetime import datetime
 import logging
 from dateutil.parser import parse as dateutil_parse
 
+from due.action import Action
+from due.util import full_class_name
 from . import agent
 
 EventTuple = namedtuple('EventTuple', ['type', 'timestamp', 'agent', 'payload'])
@@ -47,7 +49,7 @@ class Event(EventTuple):
 		result = self._replace(type=self.type.value,
 			                   timestamp=self.timestamp.isoformat())
 		if self.type == Event.Type.Action:
-			result = result._replace(payload=full_class_name(self.payload))
+			result = result._replace(payload=self.payload.save())
 		return list(result)
 
 	@staticmethod
@@ -55,10 +57,12 @@ class Event(EventTuple):
 		"""
 		Load a saved Event
 		"""
-		return Event(Event.Type(saved[0]),
+		loaded_type = Event.Type(saved[0])
+		loaded_payload = Action.load(saved[3]) if loaded_type == Event.Type.Action else saved[3]
+		return Event(loaded_type,
 			         dateutil_parse(saved[1]),
 			         saved[2],
-			         saved[3]) # TODO: actions
+			         loaded_payload)
 
 	def clone(self):
 		return Event(*list(self))

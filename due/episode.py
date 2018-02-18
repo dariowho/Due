@@ -15,8 +15,8 @@ class Episode(object):
 
 	def __init__(self, starter_agent_id, invited_agent_id):
 		self._logger = logging.getLogger(__name__ + ".Episode")
-		self._starter_id = starter_agent_id
-		self._invited_id = invited_agent_id
+		self.starter_id = starter_agent_id
+		self.invited_id = invited_agent_id
 		self.id = uuid.uuid1()
 		self.events = []
 
@@ -42,8 +42,8 @@ class Episode(object):
 	def save(self):
 		return {
 			'id': self.id,
-			'starter_agent': str(self._starter_id),
-			'invited_agents': [str(self._invited_id)],
+			'starter_agent': str(self.starter_id),
+			'invited_agents': [str(self.invited_id)],
 			'events': [e.save() for e in self.events]
 		}
 
@@ -58,8 +58,8 @@ class LiveEpisode(Episode):
 
 	def __init__(self, starter_agent, invited_agent):
 		super().__init__(starter_agent.id, invited_agent.id)
-		self._starter = starter_agent
-		self._invited = invited_agent
+		self.starter = starter_agent
+		self.invited = invited_agent
 
 	def add_event(self, agent, event):
 		self._logger.info("New %s event by %s: '%s'" % (event.type.name, agent, event.payload))
@@ -70,4 +70,4 @@ class LiveEpisode(Episode):
 			a.event_callback(event, self)
 
 	def _other_agents(self, agent):
-		return [self._starter] if agent == self._invited else [self._invited]
+		return [self.starter] if agent == self.invited else [self.invited]

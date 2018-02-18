@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
+from due.util import full_class_name, dynamic_import
 
 #
 # Action Interface
@@ -14,12 +15,34 @@ class Action(metaclass=ABCMeta):
 		"""
 		pass
 
+	def save(self):
+		return {'class': full_class_name(self.__class__), 'data': None}
+
+	@staticmethod
+	def load(saved_action):
+		class_ = dynamic_import(saved_action['class'])
+		return class_(saved_action['data'])
+
 #
-# Example Action
+# Example Actions
 #
 
 import os.path
 from datetime import datetime
+
+class RecordedAction(Action):
+	def __init__(self, data=None):
+		self.done = data['done'] if data else False
+
+	def run(self):
+		self.done = True
+		return True
+
+	def save(self):
+		return {'class': full_class_name(self.__class__), 'data': {'done': self.done}}
+
+	def __eq__(self, other):
+		return self.done == other.done
 
 class ExampleAction(Action):
 	"""
