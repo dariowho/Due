@@ -1,4 +1,5 @@
-from due.episode import Event
+from due.episode import Episode
+from due.event import Event
 from due.util import dynamic_import
 
 from abc import ABCMeta, abstractmethod
@@ -66,7 +67,7 @@ class CosineBrain(Brain):
 		self._logger = logging.getLogger(__name__ + ".CosineBrain")
 		super().__init__()
 		self._active_episodes = {}
-		self._past_episodes = data['past_episodes'] if data else []
+		self._past_episodes = [Episode.load(e) for e in data['past_episodes']] if data else []
 
 	def learn_episodes(self, episodes):
 		self._past_episodes.extend(episodes)

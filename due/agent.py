@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 
 import logging
 
-from due.episode import Episode
+from due.episode import LiveEpisode
 from due.event import Event
 from due.brain import Brain
 from due.brain import CosineBrain
@@ -158,9 +158,9 @@ class HumanAgent(Agent):
 		:param other_agent: The Agent you are including in the conversation.
 		:type other_agent: :class:`due.agent.Agent`
 
-		:rtype: :class:`due.episode.Episode`
+		:rtype: :class:`due.episode.LiveEpisode`
 		"""
-		result = Episode(self, other)
+		result = LiveEpisode(self, other)
 		other.new_episode_callback(result)
 		return result
 

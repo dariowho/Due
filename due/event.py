@@ -2,13 +2,15 @@ from collections import namedtuple
 from enum import Enum
 from datetime import datetime
 import logging
+from dateutil.parser import parse as dateutil_parse
+
+from . import agent
 
 EventTuple = namedtuple('EventTuple', ['type', 'timestamp', 'agent', 'payload'])
 
 class Event(EventTuple):
 	"""
-	An Event can be an Utterance or an Action. Note that only Utterances are
-	currently modeled.
+	An Event can be an Utterance, an Action, or a Leave event.
 	"""
 
 	class Type(Enum):
@@ -22,12 +24,14 @@ class Event(EventTuple):
 		self._logger = logging.getLogger(__name__)
 		if not isinstance(self.timestamp, datetime):
 			self._logger.warn('timestamp value is not a `datetime` instance: please update your code to avoid unexpected errors.')
+		if isinstance(self.agent, agent.Agent):
+			self._logger.warn('agent value is an `Agent` object: please provide a string ID instead to ensure correct serialization.')
 		self.acted = None
 
 	def mark_acted(self, timestamp=None):
 		"""
 		Mark the Event as acted storing the timestamp of the moment the event 
-		was acted.
+		was acted. An Event is acted when it's issued in an episode.
 
 		If no timestamp is given, the current timestamp is used.
 
@@ -40,10 +44,21 @@ class Event(EventTuple):
 		"""
 		Export the Event to a serializable `list`.
 		"""
-		result = self._replace(type=self.type.value, timestamp=self.timestamp.isoformat(), agent=self.agent.id)
+		result = self._replace(type=self.type.value,
+			                   timestamp=self.timestamp.isoformat())
 		if self.type == Event.Type.Action:
 			result = result._replace(payload=full_class_name(self.payload))
 		return list(result)
+
+	@staticmethod
+	def load(saved):
+		"""
+		Load a saved Event
+		"""
+		return Event(Event.Type(saved[0]),
+			         dateutil_parse(saved[1]),
+			         saved[2],
+			         saved[3]) # TODO: actions
 
 	def clone(self):
 		return Event(*list(self))

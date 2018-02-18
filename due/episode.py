@@ -13,21 +13,12 @@ class Episode(object):
 	An Episode is a sequence of Events
 	"""
 
-	def __init__(self, starter_agent, invited_agent):
+	def __init__(self, starter_agent_id, invited_agent_id):
 		self._logger = logging.getLogger(__name__ + ".Episode")
-		self._starter = starter_agent
-		self._invited = invited_agent
+		self._starter_id = starter_agent_id
+		self._invited_id = invited_agent_id
 		self.id = uuid.uuid1()
 		self.events = []
-
-	def add_event(self, agent, event):
-		self._logger.info("New %s event by %s: '%s'" % (event.type.name, agent, event.payload))
-		self.events.append(event)
-		event.mark_acted()
-		for a in self._other_agents(agent):
-			self._logger.debug("Notifying Agent %s." % a)
-			a.event_callback(event, self)
-			# TODO: comlete (implement event_callback in agent etc.)
 
 	def last_event(self, event_type=None):
 		"""
@@ -51,9 +42,33 @@ class Episode(object):
 	def save(self):
 		return {
 			'id': self.id,
-			'agents': [str(self._starter.id), str(self._invited.id)],
+			'starter_agent': str(self._starter_id),
+			'invited_agents': [str(self._invited_id)],
 			'events': [e.save() for e in self.events]
 		}
+
+	@staticmethod
+	def load(other):
+		result = Episode(other['starter_agent'], other['invited_agents'][0])
+		result.id = other['id']
+		result.events = [Event.load(e) for e in other['events']]
+		return result
+
+class LiveEpisode(Episode):
+
+	def __init__(self, starter_agent, invited_agent):
+		super().__init__(starter_agent.id, invited_agent.id)
+		self._starter = starter_agent
+		self._invited = invited_agent
+
+	def add_event(self, agent, event):
+		self._logger.info("New %s event by %s: '%s'" % (event.type.name, agent, event.payload))
+		self.events.append(event)
+		event.mark_acted()
+		for a in self._other_agents(agent):
+			self._logger.debug("Notifying Agent %s." % a)
+			a.event_callback(event, self)
+			# TODO: comlete (implement event_callback in agent etc.)
 
 	def _other_agents(self, agent):
 		return [self._starter] if agent == self._invited else [self._invited]
@@ -65,7 +80,7 @@ class Episode(object):
 	def add_utterance(self, agent, sentence):
 		self._logger.warn('deprecated: please update your code to use Episode.add_event() instead.')
 		self._logger.info("New utterance by %s: '%s'" % (agent, sentence))
-		utterance = Event(Event.Type.Utterance, datetime.now(), agent, sentence)
+		utterance = Event(Event.Type.Utterance, datetime.now(), agent.id, sentence)
 		self.events.append(utterance)
 		for a in self._other_agents(agent):
 			self._logger.debug("Notifying Agent %s." % a)
@@ -74,7 +89,7 @@ class Episode(object):
 	def add_action(self, agent, action):
 		self._logger.warn('deprecated: please update your code to use Episode.add_event() instead.')
 		self._logger.info("New action by %s: '%s'" % (agent, action))
-		action_event = Event(Event.Type.Action, datetime.now(), agent, action)
+		action_event = Event(Event.Type.Action, datetime.now(), agent.id, action)
 		self.events.append(action_event)
 		for a in self._other_agents(agent):
 			self._logger.debug("Notifying Agent %s." % a)
@@ -82,7 +97,7 @@ class Episode(object):
 
 	def leave(self, agent):
 		self._logger.info("Agent %s left." % agent)
-		event = Event(Event.Type.Leave, datetime.now(), agent, None)
+		event = Event(Event.Type.Leave, datetime.now(), agent.id, None)
 		for a in self._other_agents(agent):
 			self._logger.debug("Notifying Agent %s." % a)
 			a.leave_callback(self, agent)

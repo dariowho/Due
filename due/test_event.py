@@ -1,5 +1,8 @@
 import unittest
+import tempfile
+import os
 
+from due.persistence import serialize, deserialize
 from due.agent import HumanAgent
 from due.event import *
 
@@ -45,13 +48,17 @@ class TestEvent(unittest.TestCase):
 		self.assertNotEqual(e0, e4)
 		self.assertNotEqual(e0, e5)
 
-	def test_save(self):
+	def test_event_save(self):
 		a = HumanAgent('Alice')
 		now = datetime.now()
-		e = Event(Event.Type.Utterance, now, a, "hello there")
-		saved = e.save()
-		self.assertEqual(saved[0], Event.Type.Utterance.value)
-		self.assertEqual(saved[1], now.isoformat())
-		self.assertEqual(saved[2], a.id)
-		self.assertEqual(saved[3], 'hello there')
+		e = Event(Event.Type.Utterance, now, a.id, "hello there")
+		
+		test_dir = tempfile.mkdtemp()
+		test_path = os.path.join(test_dir, 'test_event_save.pkl')
+		serialize(e.save(), test_path)
+		loaded_e = Event.load(deserialize(test_path))
+		self.assertEqual(loaded_e[0], Event.Type.Utterance)
+		self.assertEqual(loaded_e[1], now)
+		self.assertEqual(loaded_e[2], a.id)
+		self.assertEqual(loaded_e[3], 'hello there')
 
