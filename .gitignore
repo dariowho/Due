@@ -14,6 +14,9 @@ dist/
 due.egg-info/
 .eggs/
 
+# Sphinx
+doc/_build
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt

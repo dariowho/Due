@@ -1,5 +1,4 @@
 from due.util import full_class_name
-from due.event import Event
 
 import logging
 import uuid
@@ -71,3 +70,6 @@ class LiveEpisode(Episode):
 
 	def _other_agents(self, agent):
 		return [self.starter] if agent == self.invited else [self.invited]
+
+# Quick fix for circular dependencies
+from due.event import Event

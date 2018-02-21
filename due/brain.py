@@ -1,7 +1,3 @@
-from due.episode import Episode
-from due.event import Event
-from due.util import dynamic_import
-
 from abc import ABCMeta, abstractmethod
 
 import logging
@@ -134,3 +130,8 @@ class CosineBrain(Brain):
 				'past_episodes': [e.save() for e in self._past_episodes]
 			}
 		}
+
+# Quick fix for circular dependencies
+from due.episode import Episode
+from due.event import Event
+from due.util import dynamic_import

@@ -6,7 +6,6 @@ from dateutil.parser import parse as dateutil_parse
 
 from due.action import Action
 from due.util import full_class_name
-from . import agent
 
 EventTuple = namedtuple('EventTuple', ['type', 'timestamp', 'agent', 'payload'])
 
@@ -66,3 +65,6 @@ class Event(EventTuple):
 
 	def clone(self):
 		return Event(*list(self))
+
+# Quick fix for circular dependencies
+from due import agent
