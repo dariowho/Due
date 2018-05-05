@@ -43,11 +43,11 @@ class Agent(metaclass=ABCMeta):
 	@abstractmethod
 	def save(self):
 		"""
-		Returns the Agent as an object. This object can be loaded with 
-		:func:`Agent.load` and can be (de)serialized using the 
+		Returns the Agent as an object. This object can be loaded with
+		:func:`Agent.load` and can be (de)serialized using the
 		:mod:`due.persistence` module.
 
-		Note that this is an **abstract method**: subclasses of :class:`Agent` 
+		Note that this is an **abstract method**: subclasses of :class:`Agent`
 		must implement their own.
 
 		:return: an object representing the Agent
@@ -59,10 +59,10 @@ class Agent(metaclass=ABCMeta):
 	@abstractmethod
 	def load(saved_agent):
 		"""
-		Loads an Agent from an object produced with the :meth:`Agent.save` 
+		Loads an Agent from an object produced with the :meth:`Agent.save`
 		method.
 
-		Note that this is an **abstract method**: subclasses of :class:`Agent` 
+		Note that this is an **abstract method**: subclasses of :class:`Agent`
 		must implement their own.
 
 		:param saved_agent: an Agent, as it was saved by :meth:`Agent.save`
@@ -78,8 +78,8 @@ class Agent(metaclass=ABCMeta):
 		This is a callback method that is invoked whenever the Agent is invited
 		to join a new conversation (Episode) with another one.
 
-		Note that this is an **abstract method**: subclasses of :class:`Agent` 
-		must implement their own. 
+		Note that this is an **abstract method**: subclasses of :class:`Agent`
+		must implement their own.
 
 		:param new_episode: the new Episode that the other Agent has created
 		:type new_episode: :class:`due.episode.Episode`
@@ -115,8 +115,8 @@ class Agent(metaclass=ABCMeta):
 		This is a callback method that is invoked whenever a new Utterance
 		Event is acted in an Episode.
 
-		Note that this is an **abstract method**: subclasses of :class:`Agent` 
-		must implement their own. 
+		Note that this is an **abstract method**: subclasses of :class:`Agent`
+		must implement their own.
 
 		:param episode: the Episode where the Utterance was acted
 		:type episode: `due.episode.Episode`
@@ -129,8 +129,8 @@ class Agent(metaclass=ABCMeta):
 		This is a callback method that is invoked whenever a new Action Event
 		is acted in an Episode.
 
-		Note that this is an **abstract method**: subclasses of :class:`Agent` 
-		must implement their own. 
+		Note that this is an **abstract method**: subclasses of :class:`Agent`
+		must implement their own.
 
 		:param episode: the Episode where the Action was acted
 		:type episode: `due.episode.Episode`
@@ -143,8 +143,8 @@ class Agent(metaclass=ABCMeta):
 		This is a callback method that is invoked whenever a new Leave Event is
 		acted in an Episode.
 
-		Note that this is an **abstract method**: subclasses of :class:`Agent` 
-		must implement their own. 
+		Note that this is an **abstract method**: subclasses of :class:`Agent`
+		must implement their own.
 
 		:param episode: the Episode where the Leave Event was acted
 		:type episode: `due.episode.Episode`
@@ -172,7 +172,7 @@ class Agent(metaclass=ABCMeta):
 		the given Episode. :class:`Agent` subclassed may need to extend this
 		implementation with some output operation (eg. print on screen,
 		broadcast to a jabber chat...).
-		
+
 		:param sentence: A sentence
 		:type sentence: :class:`str`
 		:param episode: An Episode
@@ -246,7 +246,7 @@ class HumanAgent(Agent):
 
 	def new_episode_callback(self, new_episode):
 		"""See :meth:`due.agent.Agent.new_episode_callback`"""
-		self._logger.info("New episode callback: " + str(new_episode))
+		self._logger.info("New episode callback: %s", str(new_episode))
 		self._active_episodes[new_episode.id] = new_episode
 
 	def utterance_callback(self, episode):
@@ -260,7 +260,7 @@ class HumanAgent(Agent):
 	def leave_callback(self, episode):
 		"""See :meth:`due.agent.Agent.leave_callback`"""
 		agent = episode.last_event(Event.Type.Leave).agent
-		self._logger.debug("Agent %s left the episode." % agent)
+		self._logger.debug("Agent %s left the episode.", agent)
 
 DEFAULT_DUE_UUID = uuid.UUID('423cc038-bfe0-11e6-84d6-a434d9562d81')
 
@@ -275,7 +275,7 @@ class Due(Agent):
 	def __init__(self, id=DEFAULT_DUE_UUID, brain=None):
 
 		Agent.__init__(self, id, "Due")
-		
+
 		if isinstance(brain, dict):
 			brain = Brain.load(brain)
 
@@ -294,10 +294,10 @@ class Due(Agent):
 		self._logger.info("Learning some episodes.")
 		self._brain.learn_episodes(episodes)
 
-	def new_episode_callback(self, episode):
+	def new_episode_callback(self, new_episode):
 		"""See :meth:`due.agent.Agent.new_episode_callback`"""
 		self._logger.info("Got invited to a new episode.")
-		self._brain.new_episode_callback(episode)
+		self._brain.new_episode_callback(new_episode)
 
 	def utterance_callback(self, episode):
 		"""See :meth:`due.agent.Agent.utterance_callback`"""
