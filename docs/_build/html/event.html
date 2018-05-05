@@ -1,0 +1,222 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Event &#8212; Due 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Action" href="action.html" />
+    <link rel="prev" title="Episode" href="episode.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-due.event">
+<span id="event"></span><h1>Event<a class="headerlink" href="#module-due.event" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="due.event.Event">
+<em class="property">class </em><code class="descclassname">due.event.</code><code class="descname">Event</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/event.html#Event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.event.Event" title="Permalink to this definition">¶</a></dt>
+<dd><p>An Event is anything that can happen in an Episode. It can be an Utterance,
+an Action, or a Leave event (see <a class="reference internal" href="#due.event.Event.Type" title="due.event.Event.Type"><code class="xref py py-class docutils literal"><span class="pre">due.event.Event.Type</span></code></a>).</p>
+<dl class="class">
+<dt id="due.event.Event.Type">
+<em class="property">class </em><code class="descname">Type</code><a class="reference internal" href="_modules/due/event.html#Event.Type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.event.Event.Type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enumerates the three Event types:</p>
+<ul class="simple">
+<li><cite>Event.Type.Utterance</cite></li>
+<li><cite>Event.Type.Leave</cite></li>
+<li><cite>Event.Type.Action</cite></li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.event.Event.clone">
+<code class="descname">clone</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/event.html#Event.clone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.event.Event.clone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clone the Event into a new object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a new Event object that is a clone of <cite>self</cite></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#due.event.Event" title="due.event.Event"><code class="xref py py-class docutils literal"><span class="pre">due.event.Event</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="due.event.Event.load">
+<em class="property">static </em><code class="descname">load</code><span class="sig-paren">(</span><em>saved</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/event.html#Event.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.event.Event.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load an Event that was saved with <a class="reference internal" href="#due.event.Event.save" title="due.event.Event.save"><code class="xref py py-func docutils literal"><span class="pre">due.event.Event.save()</span></code></a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>saved</strong> (<cite>list</cite>) – the saved Event</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.event.Event.mark_acted">
+<code class="descname">mark_acted</code><span class="sig-paren">(</span><em>timestamp=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/event.html#Event.mark_acted"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.event.Event.mark_acted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mark the Event as acted storing the timestamp of the moment the event
+was acted. An Event is acted when it’s issued in an episode.</p>
+<p>If no timestamp is given, the current timestamp is used.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>timestamp</strong> (<cite>datetime</cite>) – timestamp of the moment the event was acted</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.event.Event.save">
+<code class="descname">save</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/event.html#Event.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.event.Event.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export the Event to a serializable <cite>list</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a saved Event</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><cite>list</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="due.event.EventTuple">
+<em class="property">class </em><code class="descclassname">due.event.</code><code class="descname">EventTuple</code><span class="sig-paren">(</span><em>type</em>, <em>timestamp</em>, <em>agent</em>, <em>payload</em><span class="sig-paren">)</span><a class="headerlink" href="#due.event.EventTuple" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="due.event.EventTuple.agent">
+<code class="descname">agent</code><a class="headerlink" href="#due.event.EventTuple.agent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="due.event.EventTuple.payload">
+<code class="descname">payload</code><a class="headerlink" href="#due.event.EventTuple.payload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="due.event.EventTuple.timestamp">
+<code class="descname">timestamp</code><a class="headerlink" href="#due.event.EventTuple.timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="due.event.EventTuple.type">
+<code class="descname">type</code><a class="headerlink" href="#due.event.EventTuple.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Due</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="episode.html">Episode</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Event</a></li>
+<li class="toctree-l1"><a class="reference internal" href="action.html">Action</a></li>
+<li class="toctree-l1"><a class="reference internal" href="brain.html">Brain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="persistence.html">Persistence</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="episode.html" title="previous chapter">Episode</a></li>
+      <li>Next: <a href="action.html" title="next chapter">Action</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Dario Chiappetta.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/event.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

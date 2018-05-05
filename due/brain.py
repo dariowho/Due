@@ -7,33 +7,98 @@ class Brain(metaclass=ABCMeta):
 	"""
 	A Brain is responsible for storing past episodes, and making good action
 	predictions on present ones.
+
+	`Brain` is an interface that is meant to be implemented with the greatest
+	possible number of models.
 	"""
 
 	@abstractmethod
 	def learn_episodes(self, episodes):
+		"""
+		Submit a list of Episodes for the `Brain` to learn. This just wraps calls
+		to :meth:`due.brain.Brain.learn_episode`.
+
+		TODO: this should not be an abstract method
+
+		:param episodes: a list of episodes
+		:type episodes: `list` of `due.episode.Episode`
+		"""
 		pass
 
 	def learn_episode(self, episode):
+		"""
+		Submit an Episode for the Brain to learn.
+
+		After the learning process, the Brain is supposed to provide better answers
+		to the incoming Events. Whether this happens depends on the model implementing
+		the Brain interface.
+
+		:param episode: an Episode
+		:type episode: :class:`due.episode.Episode`
+		"""
 		self.learn_episodes([episode])
 
 	@abstractmethod
 	def new_episode_callback(self, episode):
+		"""
+		Agents are supposed to call this method to notify their Brain instance
+		of the initiation of a new Episode.
+
+		See :meth:`due.agent.Agent.new_episode_callback`
+
+		:param episode: the new Episode
+		:type episode: :class:`due.episode.Episode`
+		"""
 		pass
 
 	@abstractmethod
 	def utterance_callback(self, episode):
+		"""
+		Agents are supposed to call this method to notify their Brain instance
+		of a new utterance in an Episode they take part in.
+
+		See :meth:`due.agent.Agent.utterance_callback`
+
+		:param episode: the episode where the new utterance has been posted
+		:type episode: :class:`due.episode.Episode`
+		"""
 		pass
 
 	@abstractmethod
 	def leave_callback(self, episode, agent):
+		"""
+		Agents are supposed to call this method to notify their Brain instance
+		when an Agent is leaving an Episode.
+
+		See :meth:`due.agent.Agent.leave_callback`
+
+		:param episode: the Episode where the Agent is leaving
+		:type episode: :class:`due.episode.Episode`
+		:param agent: the Agent who is leaving
+		:type agent: :class:`due.agent.Agent`
+		"""
 		pass
 
 	@abstractmethod
 	def save(self):
+		"""
+		Saves the Brain to a serializable object that can be reloaded with
+		:meth:`due.brain.Brain.load`.
+
+		:return: a serializable representation of `self`
+		:rtype: `dict`
+		"""
 		pass
 
 	@staticmethod
 	def load(saved_brain):
+		"""
+		Loads an object represanting a Brain that was produced by
+		:meth:`due.brain.Brain.save`.
+
+		:param saved_brain: the saved Brain
+		:type saved_brain: `dict`
+		"""
 		class_ = dynamic_import(saved_brain['class'])
 		return class_(saved_brain['data'])
 
@@ -56,8 +121,11 @@ def _cosine_similarity(text, other_text, vectorizer=TfidfVectorizer(tokenizer=_n
 	return (tfidf*tfidf.T).A[0,1]
 
 class CosineBrain(Brain):
-	"""A baseline Brain model that just uses a vetor similarity measure to pick
-	appropriate answers to incoming utterances.
+	"""
+	A baseline Brain model that just uses cosine distance on TfIdf representations
+	of the incoming utterances to pick their appropriate answers.
+
+	see :class:`due.brain.Brain` for details on the available methods.
 	"""
 	def __init__(self, data=None):
 		self._logger = logging.getLogger(__name__ + ".CosineBrain")
@@ -79,7 +147,7 @@ class CosineBrain(Brain):
 
 		return answers
 
-	def leave_callback(self, episode):
+	def leave_callback(self, episode, agent):
 		# TODO: should implement some learning logic (eg. learn only if similar 
 		#       enough to another episode)
 		self.learn_episode(episode)

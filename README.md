@@ -53,4 +53,9 @@ Due comes with a suite of unit tests. You can run them as follows:
     $ python setup.py nosetests
 
 ## Documentation
-*Working on it...*
+Due is documented with [Sphinx](http://www.sphinx-doc.org). Source documentation files can be found in the `docs/` folder. Docs can be built as follows:
+
+    $ cd docs/
+    $ make html
+
+Built HTML files will be placed in the `docs/_build/html` directory. 

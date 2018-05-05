@@ -1,0 +1,435 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>due.agent &#8212; Due 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for due.agent</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Due is a learning, modular, action-oriented dialogue agent. `Agents` are the </span>
+<span class="sd">entities that can take part in Episodes (:mod:`due.episode`), receiving and </span>
+<span class="sd">issuing Events (:mod:`due.event`) with the optional use of a Natural Language</span>
+<span class="sd">Understanding and Generation model (Brain, :mod:`due.brain`).</span>
+
+<span class="sd">This module defines the base class for Agents (:class:`due.agent.Agent`), as</span>
+<span class="sd">well as two implementations:</span>
+
+<span class="sd">* :class:`due.agent.HumanAgent`: a dummy agent that just logs down the Episodes</span>
+<span class="sd">  and Events it receives</span>
+<span class="sd">* :class:`due.agent.Due`: an autonomous agent that uses a :class:`due.brain.Brain`</span>
+<span class="sd">  to understand Events and generate new ones.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="k">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">due.episode</span> <span class="k">import</span> <span class="n">LiveEpisode</span>
+<span class="kn">from</span> <span class="nn">due.event</span> <span class="k">import</span> <span class="n">Event</span>
+<span class="kn">from</span> <span class="nn">due.brain</span> <span class="k">import</span> <span class="n">Brain</span>
+<span class="kn">from</span> <span class="nn">due.brain</span> <span class="k">import</span> <span class="n">CosineBrain</span>
+
+<div class="viewcode-block" id="Agent"><a class="viewcode-back" href="../../agent.html#due.agent.Agent">[docs]</a><span class="k">class</span> <span class="nc">Agent</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Participants in an Episodes are called Agents. An Agent models an unique</span>
+<span class="sd">	identity through its ID, and handles the communication on the channel level.</span>
+
+<span class="sd">	Optionally, a human-friendly name can be provided, which should not be taken</span>
+<span class="sd">	into account in Machine Learning processes.</span>
+
+<span class="sd">	:param id: an unique ID for the Agent</span>
+<span class="sd">	:type id: object</span>
+<span class="sd">	:param name: a human-friendly name for the Agent</span>
+<span class="sd">	:type name: `str`</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">id</span> <span class="k">if</span> <span class="nb">id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid1</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+<div class="viewcode-block" id="Agent.save"><a class="viewcode-back" href="../../agent.html#due.agent.Agent.save">[docs]</a>	<span class="nd">@abstractmethod</span>
+	<span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Returns the Agent as an object. This object can be loaded with</span>
+<span class="sd">		:func:`Agent.load` and can be (de)serialized using the</span>
+<span class="sd">		:mod:`due.persistence` module.</span>
+
+<span class="sd">		Note that this is an **abstract method**: subclasses of :class:`Agent`</span>
+<span class="sd">		must implement their own.</span>
+
+<span class="sd">		:return: an object representing the Agent</span>
+<span class="sd">		:rtype: object</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Agent.load"><a class="viewcode-back" href="../../agent.html#due.agent.Agent.load">[docs]</a>	<span class="nd">@staticmethod</span>
+	<span class="nd">@abstractmethod</span>
+	<span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">saved_agent</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Loads an Agent from an object produced with the :meth:`Agent.save`</span>
+<span class="sd">		method.</span>
+
+<span class="sd">		Note that this is an **abstract method**: subclasses of :class:`Agent`</span>
+<span class="sd">		must implement their own.</span>
+
+<span class="sd">		:param saved_agent: an Agent, as it was saved by :meth:`Agent.save`</span>
+<span class="sd">		:type saved_agent: object</span>
+<span class="sd">		:return: an Agent</span>
+<span class="sd">		:rtype: `due.agent.Agent`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Agent.new_episode_callback"><a class="viewcode-back" href="../../agent.html#due.agent.Agent.new_episode_callback">[docs]</a>	<span class="nd">@abstractmethod</span>
+	<span class="k">def</span> <span class="nf">new_episode_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This is a callback method that is invoked whenever the Agent is invited</span>
+<span class="sd">		to join a new conversation (Episode) with another one.</span>
+
+<span class="sd">		Note that this is an **abstract method**: subclasses of :class:`Agent`</span>
+<span class="sd">		must implement their own.</span>
+
+<span class="sd">		:param new_episode: the new Episode that the other Agent has created</span>
+<span class="sd">		:type new_episode: :class:`due.episode.Episode`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Agent.event_callback"><a class="viewcode-back" href="../../agent.html#due.agent.Agent.event_callback">[docs]</a>	<span class="k">def</span> <span class="nf">event_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This is a callback method that is invoked whenever a new Event is acted</span>
+<span class="sd">		in an Episode. This method acts as a proxy to specific Event type</span>
+<span class="sd">		handlers:</span>
+
+<span class="sd">		* :meth:`Agent.utterance_callback` (:class:`due.event.Event.Type.Utterance`)</span>
+<span class="sd">		* :meth:`Agent.action_callback` (:class:`due.event.Event.Type.Action`)</span>
+<span class="sd">		* :meth:`Agent.leave_callback` (:class:`due.event.Event.Type.Leave`)</span>
+
+<span class="sd">		:param event: the new Event</span>
+<span class="sd">		:type event: :class:`due.event.Event`</span>
+<span class="sd">		:param episode: the Episode where the Event was acted</span>
+<span class="sd">		:type episode: :class:`due.episode.Episode`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Event</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">Utterance</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">utterance_callback</span><span class="p">(</span><span class="n">episode</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Event</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">Action</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">action_callback</span><span class="p">(</span><span class="n">episode</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Event</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">Leave</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">leave_callback</span><span class="p">(</span><span class="n">episode</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Agent.utterance_callback"><a class="viewcode-back" href="../../agent.html#due.agent.Agent.utterance_callback">[docs]</a>	<span class="nd">@abstractmethod</span>
+	<span class="k">def</span> <span class="nf">utterance_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This is a callback method that is invoked whenever a new Utterance</span>
+<span class="sd">		Event is acted in an Episode.</span>
+
+<span class="sd">		Note that this is an **abstract method**: subclasses of :class:`Agent`</span>
+<span class="sd">		must implement their own.</span>
+
+<span class="sd">		:param episode: the Episode where the Utterance was acted</span>
+<span class="sd">		:type episode: `due.episode.Episode`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Agent.action_callback"><a class="viewcode-back" href="../../agent.html#due.agent.Agent.action_callback">[docs]</a>	<span class="nd">@abstractmethod</span>
+	<span class="k">def</span> <span class="nf">action_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This is a callback method that is invoked whenever a new Action Event</span>
+<span class="sd">		is acted in an Episode.</span>
+
+<span class="sd">		Note that this is an **abstract method**: subclasses of :class:`Agent`</span>
+<span class="sd">		must implement their own.</span>
+
+<span class="sd">		:param episode: the Episode where the Action was acted</span>
+<span class="sd">		:type episode: `due.episode.Episode`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Agent.leave_callback"><a class="viewcode-back" href="../../agent.html#due.agent.Agent.leave_callback">[docs]</a>	<span class="nd">@abstractmethod</span>
+	<span class="k">def</span> <span class="nf">leave_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This is a callback method that is invoked whenever a new Leave Event is</span>
+<span class="sd">		acted in an Episode.</span>
+
+<span class="sd">		Note that this is an **abstract method**: subclasses of :class:`Agent`</span>
+<span class="sd">		must implement their own.</span>
+
+<span class="sd">		:param episode: the Episode where the Leave Event was acted</span>
+<span class="sd">		:type episode: `due.episode.Episode`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Agent.act_events"><a class="viewcode-back" href="../../agent.html#due.agent.Agent.act_events">[docs]</a>	<span class="k">def</span> <span class="nf">act_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Act a sequence of Events in the given Episode.</span>
+
+<span class="sd">		:param events: a list of Events</span>
+<span class="sd">		:type events: `list` of :class:`due.event.Event`</span>
+<span class="sd">		:param episode: an Episode</span>
+<span class="sd">		:type episode: :class:`due.episode.Episode`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+			<span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Event</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">Action</span><span class="p">:</span>
+				<span class="n">e</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+			<span class="n">episode</span><span class="o">.</span><span class="n">add_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Agent.say"><a class="viewcode-back" href="../../agent.html#due.agent.Agent.say">[docs]</a>	<span class="k">def</span> <span class="nf">say</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Create an Event out of the given sentence and act the new Event in</span>
+<span class="sd">		the given Episode. :class:`Agent` subclassed may need to extend this</span>
+<span class="sd">		implementation with some output operation (eg. print on screen,</span>
+<span class="sd">		broadcast to a jabber chat...).</span>
+
+<span class="sd">		:param sentence: A sentence</span>
+<span class="sd">		:type sentence: :class:`str`</span>
+<span class="sd">		:param episode: An Episode</span>
+<span class="sd">		:type episode: :class:`due.episode.Episode`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">utterance_event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">(</span><span class="n">Event</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">Utterance</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">sentence</span><span class="p">)</span>
+		<span class="n">episode</span><span class="o">.</span><span class="n">add_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">utterance_event</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Agent.do"><a class="viewcode-back" href="../../agent.html#due.agent.Agent.do">[docs]</a>	<span class="k">def</span> <span class="nf">do</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Create an Event out of the given Action and acts the new Event in the</span>
+<span class="sd">		given Episode.</span>
+
+<span class="sd">		:param action: An Action</span>
+<span class="sd">		:type action: :class:`due.action.Action`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">action</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+		<span class="n">action_event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">(</span><span class="n">Event</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">Action</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+		<span class="n">episode</span><span class="o">.</span><span class="n">add_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action_event</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Agent.leave"><a class="viewcode-back" href="../../agent.html#due.agent.Agent.leave">[docs]</a>	<span class="k">def</span> <span class="nf">leave</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Acts a new Leave Event in the given Episode.</span>
+
+<span class="sd">		:param episode: One of the Agent&#39;s active episodes</span>
+<span class="sd">		:type episode: :class:`due.episode.Episode`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">leave_event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">(</span><span class="n">Event</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">Leave</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+		<span class="n">episode</span><span class="o">.</span><span class="n">add_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leave_event</span><span class="p">)</span></div>
+
+	<span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+		<span class="k">return</span> <span class="s2">&quot;&lt;Agent: &quot;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;&gt;&quot;</span></div>
+
+<div class="viewcode-block" id="HumanAgent"><a class="viewcode-back" href="../../agent.html#due.agent.HumanAgent">[docs]</a><span class="k">class</span> <span class="nc">HumanAgent</span><span class="p">(</span><span class="n">Agent</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	A Human Agent is an Agent that uses a Human brain, typically sitting behind</span>
+<span class="sd">	a keyboard, to make sense of :class:`Episode`\ s and produce new</span>
+<span class="sd">	:class:`.Event`\ s.</span>
+
+<span class="sd">	This is the simplest kind of Agent, as it simply logs new Episodes and</span>
+<span class="sd">	Events, expecting the interaction to be commanded externally.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+		<span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_active_episodes</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;.HumanAgent&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="HumanAgent.save"><a class="viewcode-back" href="../../agent.html#due.agent.HumanAgent.save">[docs]</a>	<span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;See :meth:`due.agent.Agent.save`&quot;&quot;&quot;</span>
+		<span class="k">return</span> <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="HumanAgent.load"><a class="viewcode-back" href="../../agent.html#due.agent.HumanAgent.load">[docs]</a>	<span class="nd">@staticmethod</span>
+	<span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">saved_agent</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;See :meth:`due.agent.Agent.load`&quot;&quot;&quot;</span>
+		<span class="k">return</span> <span class="n">HumanAgent</span><span class="p">(</span><span class="o">**</span><span class="n">saved_agent</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HumanAgent.start_episode"><a class="viewcode-back" href="../../agent.html#due.agent.HumanAgent.start_episode">[docs]</a>	<span class="k">def</span> <span class="nf">start_episode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Engages another Agent in a new conversation, thus creating a new</span>
+<span class="sd">		Episode.</span>
+
+<span class="sd">		:param other_agent: The Agent you are inviting to the conversation.</span>
+<span class="sd">		:type other_agent: :class:`due.agent.Agent`</span>
+<span class="sd">		:return: a new Episode object</span>
+<span class="sd">		:rtype: :class:`due.episode.LiveEpisode`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">result</span> <span class="o">=</span> <span class="n">LiveEpisode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+		<span class="n">other</span><span class="o">.</span><span class="n">new_episode_callback</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="HumanAgent.new_episode_callback"><a class="viewcode-back" href="../../agent.html#due.agent.HumanAgent.new_episode_callback">[docs]</a>	<span class="k">def</span> <span class="nf">new_episode_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;See :meth:`due.agent.Agent.new_episode_callback`&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;New episode callback: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">new_episode</span><span class="p">))</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_active_episodes</span><span class="p">[</span><span class="n">new_episode</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_episode</span></div>
+
+<div class="viewcode-block" id="HumanAgent.utterance_callback"><a class="viewcode-back" href="../../agent.html#due.agent.HumanAgent.utterance_callback">[docs]</a>	<span class="k">def</span> <span class="nf">utterance_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;See :meth:`due.agent.Agent.utterance_callback`&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Utterance received.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HumanAgent.action_callback"><a class="viewcode-back" href="../../agent.html#due.agent.HumanAgent.action_callback">[docs]</a>	<span class="k">def</span> <span class="nf">action_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;See :meth:`due.agent.Agent.action_callback`&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Action received.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HumanAgent.leave_callback"><a class="viewcode-back" href="../../agent.html#due.agent.HumanAgent.leave_callback">[docs]</a>	<span class="k">def</span> <span class="nf">leave_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;See :meth:`due.agent.Agent.leave_callback`&quot;&quot;&quot;</span>
+		<span class="n">agent</span> <span class="o">=</span> <span class="n">episode</span><span class="o">.</span><span class="n">last_event</span><span class="p">(</span><span class="n">Event</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">Leave</span><span class="p">)</span><span class="o">.</span><span class="n">agent</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Agent </span><span class="si">%s</span><span class="s2"> left the episode.&quot;</span><span class="p">,</span> <span class="n">agent</span><span class="p">)</span></div></div>
+
+<span class="n">DEFAULT_DUE_UUID</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="s1">&#39;423cc038-bfe0-11e6-84d6-a434d9562d81&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Due"><a class="viewcode-back" href="../../agent.html#due.agent.Due">[docs]</a><span class="k">class</span> <span class="nc">Due</span><span class="p">(</span><span class="n">Agent</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Due is a conversational agent that makes use of a :class:`due.brain.Brain`</span>
+<span class="sd">	object to understand events and produce new ones.</span>
+
+<span class="sd">	Due is a subclass of :class:`due.agent.Agent`.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">DEFAULT_DUE_UUID</span><span class="p">,</span> <span class="n">brain</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+		<span class="n">Agent</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="s2">&quot;Due&quot;</span><span class="p">)</span>
+
+		<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">brain</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+			<span class="n">brain</span> <span class="o">=</span> <span class="n">Brain</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">brain</span><span class="p">)</span>
+
+		<span class="n">brain</span> <span class="o">=</span> <span class="n">brain</span> <span class="k">if</span> <span class="n">brain</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">CosineBrain</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_brain</span> <span class="o">=</span> <span class="n">brain</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot;.Due&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Due.learn_episodes"><a class="viewcode-back" href="../../agent.html#due.agent.Due.learn_episodes">[docs]</a>	<span class="k">def</span> <span class="nf">learn_episodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">episodes</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Trains the Natural Language and Generation (Brain) model with the</span>
+<span class="sd">		given sequence of Episodes.</span>
+
+<span class="sd">		:param episodes: a list of Episodes</span>
+<span class="sd">		:type episodes: `list` of `due.episode.Episode`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Learning some episodes.&quot;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_brain</span><span class="o">.</span><span class="n">learn_episodes</span><span class="p">(</span><span class="n">episodes</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Due.new_episode_callback"><a class="viewcode-back" href="../../agent.html#due.agent.Due.new_episode_callback">[docs]</a>	<span class="k">def</span> <span class="nf">new_episode_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;See :meth:`due.agent.Agent.new_episode_callback`&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Got invited to a new episode.&quot;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_brain</span><span class="o">.</span><span class="n">new_episode_callback</span><span class="p">(</span><span class="n">new_episode</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Due.utterance_callback"><a class="viewcode-back" href="../../agent.html#due.agent.Due.utterance_callback">[docs]</a>	<span class="k">def</span> <span class="nf">utterance_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;See :meth:`due.agent.Agent.utterance_callback`&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Received utterance&quot;</span><span class="p">)</span>
+		<span class="n">answers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_brain</span><span class="o">.</span><span class="n">utterance_callback</span><span class="p">(</span><span class="n">episode</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">act_events</span><span class="p">(</span><span class="n">answers</span><span class="p">,</span> <span class="n">episode</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Due.action_callback"><a class="viewcode-back" href="../../agent.html#due.agent.Due.action_callback">[docs]</a>	<span class="k">def</span> <span class="nf">action_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;See :meth:`due.agent.Agent.action_callback`&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Received action&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Due.leave_callback"><a class="viewcode-back" href="../../agent.html#due.agent.Due.leave_callback">[docs]</a>	<span class="k">def</span> <span class="nf">leave_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">episode</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;See :meth:`due.agent.Agent.leave_callback`&quot;&quot;&quot;</span>
+		<span class="n">agent</span> <span class="o">=</span> <span class="n">episode</span><span class="o">.</span><span class="n">last_event</span><span class="p">(</span><span class="n">Event</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">Leave</span><span class="p">)</span><span class="o">.</span><span class="n">agent</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Agent </span><span class="si">%s</span><span class="s2"> left the episode.&quot;</span> <span class="o">%</span> <span class="n">agent</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_brain</span><span class="o">.</span><span class="n">leave_callback</span><span class="p">(</span><span class="n">episode</span><span class="p">,</span> <span class="n">agent</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Due.load"><a class="viewcode-back" href="../../agent.html#due.agent.Due.load">[docs]</a>	<span class="nd">@staticmethod</span>
+	<span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">saved_agent</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;See :meth:`due.agent.Agent.load`&quot;&quot;&quot;</span>
+		<span class="k">return</span> <span class="n">Due</span><span class="p">(</span><span class="n">saved_agent</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span> <span class="n">saved_agent</span><span class="p">[</span><span class="s1">&#39;brain&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Due.save"><a class="viewcode-back" href="../../agent.html#due.agent.Due.save">[docs]</a>	<span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;See :meth:`due.agent.Agent.save`&quot;&quot;&quot;</span>
+		<span class="k">return</span> <span class="p">{</span>
+			<span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+			<span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+			<span class="s1">&#39;brain&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_brain</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+		<span class="p">}</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Due</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../episode.html">Episode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../event.html">Event</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../action.html">Action</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../brain.html">Brain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../persistence.html">Persistence</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Dario Chiappetta.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

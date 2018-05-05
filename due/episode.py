@@ -3,13 +3,12 @@ from due.util import full_class_name
 import logging
 import uuid
 import copy
-from datetime import datetime
 
 UTTERANCE_LABEL = 'utterance'
 
 class Episode(object):
 	"""
-	An Episode is a sequence of Events
+	An Episode is a sequence of Events issued by Agents
 	"""
 
 	def __init__(self, starter_agent_id, invited_agent_id):
@@ -39,6 +38,13 @@ class Episode(object):
 		return None
 
 	def save(self):
+		"""
+		Save the Episode to a serializable object, that can be loaded with
+		:meth:`due.episode.Episode.load`.
+
+		:return: a serializable representation of `self`
+		:rtype: `dict`
+		"""
 		return {
 			'id': self.id,
 			'starter_agent': str(self.starter_id),
@@ -48,19 +54,43 @@ class Episode(object):
 
 	@staticmethod
 	def load(other):
+		"""
+		Loads an Episode as it was saved by :meth:`due.episode.Episode.save`.
+
+		:param other: the episode to be loaded
+		:type other: `dict`
+		:return: an Episode object representing `other`
+		:rtype: :class:`due.episode.Episode`
+		"""
 		result = Episode(other['starter_agent'], other['invited_agents'][0])
 		result.id = other['id']
 		result.events = [Event.load(e) for e in other['events']]
 		return result
 
 class LiveEpisode(Episode):
+	"""
+	A LiveEpisode is an Episode that is currently under way. That is, new Events
+	can be acted in it.
 
+	:param starter_agent: the Agent which started the Episode
+	:type starter_agent: :class:`due.agent.Agent`
+	:param invited_agent: the agent invited to the Episode
+	:type invited_agent: :class:`due.agent.Agent`
+	"""
 	def __init__(self, starter_agent, invited_agent):
 		super().__init__(starter_agent.id, invited_agent.id)
 		self.starter = starter_agent
 		self.invited = invited_agent
 
 	def add_event(self, agent, event):
+		"""
+		Adds an Event to the LiveEpisode.
+
+		:param agent: the agent which acted the Event
+		:type agent: :class:`due.agent.Agent`
+		:param event: the event that was acted by the Agent
+		:type event: :class:`due.event.Event`
+		"""
 		self._logger.info("New %s event by %s: '%s'" % (event.type.name, agent, event.payload))
 		self.events.append(event)
 		event.mark_acted()

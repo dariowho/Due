@@ -1,0 +1,472 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Agent &#8212; Due 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Episode" href="episode.html" />
+    <link rel="prev" title="Welcome to Due’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-due.agent">
+<span id="agent"></span><h1>Agent<a class="headerlink" href="#module-due.agent" title="Permalink to this headline">¶</a></h1>
+<p>Due is a learning, modular, action-oriented dialogue agent. <cite>Agents</cite> are the 
+entities that can take part in Episodes (<a class="reference internal" href="episode.html#module-due.episode" title="due.episode"><code class="xref py py-mod docutils literal"><span class="pre">due.episode</span></code></a>), receiving and 
+issuing Events (<a class="reference internal" href="event.html#module-due.event" title="due.event"><code class="xref py py-mod docutils literal"><span class="pre">due.event</span></code></a>) with the optional use of a Natural Language
+Understanding and Generation model (Brain, <a class="reference internal" href="brain.html#module-due.brain" title="due.brain"><code class="xref py py-mod docutils literal"><span class="pre">due.brain</span></code></a>).</p>
+<p>This module defines the base class for Agents (<a class="reference internal" href="#due.agent.Agent" title="due.agent.Agent"><code class="xref py py-class docutils literal"><span class="pre">due.agent.Agent</span></code></a>), as
+well as two implementations:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#due.agent.HumanAgent" title="due.agent.HumanAgent"><code class="xref py py-class docutils literal"><span class="pre">due.agent.HumanAgent</span></code></a>: a dummy agent that just logs down the Episodes
+and Events it receives</li>
+<li><a class="reference internal" href="#due.agent.Due" title="due.agent.Due"><code class="xref py py-class docutils literal"><span class="pre">due.agent.Due</span></code></a>: an autonomous agent that uses a <a class="reference internal" href="brain.html#due.brain.Brain" title="due.brain.Brain"><code class="xref py py-class docutils literal"><span class="pre">due.brain.Brain</span></code></a>
+to understand Events and generate new ones.</li>
+</ul>
+<dl class="class">
+<dt id="due.agent.Agent">
+<em class="property">class </em><code class="descclassname">due.agent.</code><code class="descname">Agent</code><span class="sig-paren">(</span><em>id=None</em>, <em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Agent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Agent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Participants in an Episodes are called Agents. An Agent models an unique
+identity through its ID, and handles the communication on the channel level.</p>
+<p>Optionally, a human-friendly name can be provided, which should not be taken
+into account in Machine Learning processes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>id</strong> (<em>object</em>) – an unique ID for the Agent</li>
+<li><strong>name</strong> (<cite>str</cite>) – a human-friendly name for the Agent</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="due.agent.Agent.act_events">
+<code class="descname">act_events</code><span class="sig-paren">(</span><em>events</em>, <em>episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Agent.act_events"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Agent.act_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Act a sequence of Events in the given Episode.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>events</strong> (<cite>list</cite> of <a class="reference internal" href="event.html#due.event.Event" title="due.event.Event"><code class="xref py py-class docutils literal"><span class="pre">due.event.Event</span></code></a>) – a list of Events</li>
+<li><strong>episode</strong> (<a class="reference internal" href="episode.html#due.episode.Episode" title="due.episode.Episode"><code class="xref py py-class docutils literal"><span class="pre">due.episode.Episode</span></code></a>) – an Episode</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.Agent.action_callback">
+<code class="descname">action_callback</code><span class="sig-paren">(</span><em>episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Agent.action_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Agent.action_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a callback method that is invoked whenever a new Action Event
+is acted in an Episode.</p>
+<p>Note that this is an <strong>abstract method</strong>: subclasses of <a class="reference internal" href="#due.agent.Agent" title="due.agent.Agent"><code class="xref py py-class docutils literal"><span class="pre">Agent</span></code></a>
+must implement their own.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>episode</strong> (<cite>due.episode.Episode</cite>) – the Episode where the Action was acted</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.Agent.do">
+<code class="descname">do</code><span class="sig-paren">(</span><em>action</em>, <em>episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Agent.do"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Agent.do" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an Event out of the given Action and acts the new Event in the
+given Episode.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>action</strong> (<a class="reference internal" href="action.html#due.action.Action" title="due.action.Action"><code class="xref py py-class docutils literal"><span class="pre">due.action.Action</span></code></a>) – An Action</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.Agent.event_callback">
+<code class="descname">event_callback</code><span class="sig-paren">(</span><em>event</em>, <em>episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Agent.event_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Agent.event_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a callback method that is invoked whenever a new Event is acted
+in an Episode. This method acts as a proxy to specific Event type
+handlers:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#due.agent.Agent.utterance_callback" title="due.agent.Agent.utterance_callback"><code class="xref py py-meth docutils literal"><span class="pre">Agent.utterance_callback()</span></code></a> (<code class="xref py py-class docutils literal"><span class="pre">due.event.Event.Type.Utterance</span></code>)</li>
+<li><a class="reference internal" href="#due.agent.Agent.action_callback" title="due.agent.Agent.action_callback"><code class="xref py py-meth docutils literal"><span class="pre">Agent.action_callback()</span></code></a> (<code class="xref py py-class docutils literal"><span class="pre">due.event.Event.Type.Action</span></code>)</li>
+<li><a class="reference internal" href="#due.agent.Agent.leave_callback" title="due.agent.Agent.leave_callback"><code class="xref py py-meth docutils literal"><span class="pre">Agent.leave_callback()</span></code></a> (<code class="xref py py-class docutils literal"><span class="pre">due.event.Event.Type.Leave</span></code>)</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>event</strong> (<a class="reference internal" href="event.html#due.event.Event" title="due.event.Event"><code class="xref py py-class docutils literal"><span class="pre">due.event.Event</span></code></a>) – the new Event</li>
+<li><strong>episode</strong> (<a class="reference internal" href="episode.html#due.episode.Episode" title="due.episode.Episode"><code class="xref py py-class docutils literal"><span class="pre">due.episode.Episode</span></code></a>) – the Episode where the Event was acted</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.Agent.leave">
+<code class="descname">leave</code><span class="sig-paren">(</span><em>episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Agent.leave"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Agent.leave" title="Permalink to this definition">¶</a></dt>
+<dd><p>Acts a new Leave Event in the given Episode.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>episode</strong> (<a class="reference internal" href="episode.html#due.episode.Episode" title="due.episode.Episode"><code class="xref py py-class docutils literal"><span class="pre">due.episode.Episode</span></code></a>) – One of the Agent’s active episodes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.Agent.leave_callback">
+<code class="descname">leave_callback</code><span class="sig-paren">(</span><em>episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Agent.leave_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Agent.leave_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a callback method that is invoked whenever a new Leave Event is
+acted in an Episode.</p>
+<p>Note that this is an <strong>abstract method</strong>: subclasses of <a class="reference internal" href="#due.agent.Agent" title="due.agent.Agent"><code class="xref py py-class docutils literal"><span class="pre">Agent</span></code></a>
+must implement their own.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>episode</strong> (<cite>due.episode.Episode</cite>) – the Episode where the Leave Event was acted</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="due.agent.Agent.load">
+<em class="property">static </em><code class="descname">load</code><span class="sig-paren">(</span><em>saved_agent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Agent.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Agent.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads an Agent from an object produced with the <a class="reference internal" href="#due.agent.Agent.save" title="due.agent.Agent.save"><code class="xref py py-meth docutils literal"><span class="pre">Agent.save()</span></code></a>
+method.</p>
+<p>Note that this is an <strong>abstract method</strong>: subclasses of <a class="reference internal" href="#due.agent.Agent" title="due.agent.Agent"><code class="xref py py-class docutils literal"><span class="pre">Agent</span></code></a>
+must implement their own.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>saved_agent</strong> (<em>object</em>) – an Agent, as it was saved by <a class="reference internal" href="#due.agent.Agent.save" title="due.agent.Agent.save"><code class="xref py py-meth docutils literal"><span class="pre">Agent.save()</span></code></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">an Agent</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><cite>due.agent.Agent</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.Agent.new_episode_callback">
+<code class="descname">new_episode_callback</code><span class="sig-paren">(</span><em>new_episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Agent.new_episode_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Agent.new_episode_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a callback method that is invoked whenever the Agent is invited
+to join a new conversation (Episode) with another one.</p>
+<p>Note that this is an <strong>abstract method</strong>: subclasses of <a class="reference internal" href="#due.agent.Agent" title="due.agent.Agent"><code class="xref py py-class docutils literal"><span class="pre">Agent</span></code></a>
+must implement their own.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>new_episode</strong> (<a class="reference internal" href="episode.html#due.episode.Episode" title="due.episode.Episode"><code class="xref py py-class docutils literal"><span class="pre">due.episode.Episode</span></code></a>) – the new Episode that the other Agent has created</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.Agent.save">
+<code class="descname">save</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Agent.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Agent.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the Agent as an object. This object can be loaded with
+<a class="reference internal" href="#due.agent.Agent.load" title="due.agent.Agent.load"><code class="xref py py-func docutils literal"><span class="pre">Agent.load()</span></code></a> and can be (de)serialized using the
+<a class="reference internal" href="persistence.html#module-due.persistence" title="due.persistence"><code class="xref py py-mod docutils literal"><span class="pre">due.persistence</span></code></a> module.</p>
+<p>Note that this is an <strong>abstract method</strong>: subclasses of <a class="reference internal" href="#due.agent.Agent" title="due.agent.Agent"><code class="xref py py-class docutils literal"><span class="pre">Agent</span></code></a>
+must implement their own.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">an object representing the Agent</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.Agent.say">
+<code class="descname">say</code><span class="sig-paren">(</span><em>sentence</em>, <em>episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Agent.say"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Agent.say" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an Event out of the given sentence and act the new Event in
+the given Episode. <a class="reference internal" href="#due.agent.Agent" title="due.agent.Agent"><code class="xref py py-class docutils literal"><span class="pre">Agent</span></code></a> subclassed may need to extend this
+implementation with some output operation (eg. print on screen,
+broadcast to a jabber chat…).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sentence</strong> (<code class="xref py py-class docutils literal"><span class="pre">str</span></code>) – A sentence</li>
+<li><strong>episode</strong> (<a class="reference internal" href="episode.html#due.episode.Episode" title="due.episode.Episode"><code class="xref py py-class docutils literal"><span class="pre">due.episode.Episode</span></code></a>) – An Episode</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.Agent.utterance_callback">
+<code class="descname">utterance_callback</code><span class="sig-paren">(</span><em>episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Agent.utterance_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Agent.utterance_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a callback method that is invoked whenever a new Utterance
+Event is acted in an Episode.</p>
+<p>Note that this is an <strong>abstract method</strong>: subclasses of <a class="reference internal" href="#due.agent.Agent" title="due.agent.Agent"><code class="xref py py-class docutils literal"><span class="pre">Agent</span></code></a>
+must implement their own.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>episode</strong> (<cite>due.episode.Episode</cite>) – the Episode where the Utterance was acted</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="due.agent.Due">
+<em class="property">class </em><code class="descclassname">due.agent.</code><code class="descname">Due</code><span class="sig-paren">(</span><em>id=UUID('423cc038-bfe0-11e6-84d6-a434d9562d81')</em>, <em>brain=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Due"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Due" title="Permalink to this definition">¶</a></dt>
+<dd><p>Due is a conversational agent that makes use of a <a class="reference internal" href="brain.html#due.brain.Brain" title="due.brain.Brain"><code class="xref py py-class docutils literal"><span class="pre">due.brain.Brain</span></code></a>
+object to understand events and produce new ones.</p>
+<p>Due is a subclass of <a class="reference internal" href="#due.agent.Agent" title="due.agent.Agent"><code class="xref py py-class docutils literal"><span class="pre">due.agent.Agent</span></code></a>.</p>
+<dl class="method">
+<dt id="due.agent.Due.action_callback">
+<code class="descname">action_callback</code><span class="sig-paren">(</span><em>episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Due.action_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Due.action_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#due.agent.Agent.action_callback" title="due.agent.Agent.action_callback"><code class="xref py py-meth docutils literal"><span class="pre">due.agent.Agent.action_callback()</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.Due.learn_episodes">
+<code class="descname">learn_episodes</code><span class="sig-paren">(</span><em>episodes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Due.learn_episodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Due.learn_episodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trains the Natural Language and Generation (Brain) model with the
+given sequence of Episodes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>episodes</strong> (<cite>list</cite> of <cite>due.episode.Episode</cite>) – a list of Episodes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.Due.leave_callback">
+<code class="descname">leave_callback</code><span class="sig-paren">(</span><em>episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Due.leave_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Due.leave_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#due.agent.Agent.leave_callback" title="due.agent.Agent.leave_callback"><code class="xref py py-meth docutils literal"><span class="pre">due.agent.Agent.leave_callback()</span></code></a></p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="due.agent.Due.load">
+<em class="property">static </em><code class="descname">load</code><span class="sig-paren">(</span><em>saved_agent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Due.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Due.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#due.agent.Agent.load" title="due.agent.Agent.load"><code class="xref py py-meth docutils literal"><span class="pre">due.agent.Agent.load()</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.Due.new_episode_callback">
+<code class="descname">new_episode_callback</code><span class="sig-paren">(</span><em>new_episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Due.new_episode_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Due.new_episode_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#due.agent.Agent.new_episode_callback" title="due.agent.Agent.new_episode_callback"><code class="xref py py-meth docutils literal"><span class="pre">due.agent.Agent.new_episode_callback()</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.Due.save">
+<code class="descname">save</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Due.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Due.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#due.agent.Agent.save" title="due.agent.Agent.save"><code class="xref py py-meth docutils literal"><span class="pre">due.agent.Agent.save()</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.Due.utterance_callback">
+<code class="descname">utterance_callback</code><span class="sig-paren">(</span><em>episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#Due.utterance_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.Due.utterance_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#due.agent.Agent.utterance_callback" title="due.agent.Agent.utterance_callback"><code class="xref py py-meth docutils literal"><span class="pre">due.agent.Agent.utterance_callback()</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="due.agent.HumanAgent">
+<em class="property">class </em><code class="descclassname">due.agent.</code><code class="descname">HumanAgent</code><span class="sig-paren">(</span><em>id=None</em>, <em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#HumanAgent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.HumanAgent" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Human Agent is an Agent that uses a Human brain, typically sitting behind
+a keyboard, to make sense of <code class="xref py py-class docutils literal"><span class="pre">Episode</span></code>s and produce new
+<a class="reference internal" href="event.html#due.event.Event" title="due.event.Event"><code class="xref py py-class docutils literal"><span class="pre">Event</span></code></a>s.</p>
+<p>This is the simplest kind of Agent, as it simply logs new Episodes and
+Events, expecting the interaction to be commanded externally.</p>
+<dl class="method">
+<dt id="due.agent.HumanAgent.action_callback">
+<code class="descname">action_callback</code><span class="sig-paren">(</span><em>episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#HumanAgent.action_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.HumanAgent.action_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#due.agent.Agent.action_callback" title="due.agent.Agent.action_callback"><code class="xref py py-meth docutils literal"><span class="pre">due.agent.Agent.action_callback()</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.HumanAgent.leave_callback">
+<code class="descname">leave_callback</code><span class="sig-paren">(</span><em>episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#HumanAgent.leave_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.HumanAgent.leave_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#due.agent.Agent.leave_callback" title="due.agent.Agent.leave_callback"><code class="xref py py-meth docutils literal"><span class="pre">due.agent.Agent.leave_callback()</span></code></a></p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="due.agent.HumanAgent.load">
+<em class="property">static </em><code class="descname">load</code><span class="sig-paren">(</span><em>saved_agent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#HumanAgent.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.HumanAgent.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#due.agent.Agent.load" title="due.agent.Agent.load"><code class="xref py py-meth docutils literal"><span class="pre">due.agent.Agent.load()</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.HumanAgent.new_episode_callback">
+<code class="descname">new_episode_callback</code><span class="sig-paren">(</span><em>new_episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#HumanAgent.new_episode_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.HumanAgent.new_episode_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#due.agent.Agent.new_episode_callback" title="due.agent.Agent.new_episode_callback"><code class="xref py py-meth docutils literal"><span class="pre">due.agent.Agent.new_episode_callback()</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.HumanAgent.save">
+<code class="descname">save</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#HumanAgent.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.HumanAgent.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#due.agent.Agent.save" title="due.agent.Agent.save"><code class="xref py py-meth docutils literal"><span class="pre">due.agent.Agent.save()</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.HumanAgent.start_episode">
+<code class="descname">start_episode</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#HumanAgent.start_episode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.HumanAgent.start_episode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Engages another Agent in a new conversation, thus creating a new
+Episode.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other_agent</strong> (<a class="reference internal" href="#due.agent.Agent" title="due.agent.Agent"><code class="xref py py-class docutils literal"><span class="pre">due.agent.Agent</span></code></a>) – The Agent you are inviting to the conversation.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a new Episode object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="episode.html#due.episode.LiveEpisode" title="due.episode.LiveEpisode"><code class="xref py py-class docutils literal"><span class="pre">due.episode.LiveEpisode</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="due.agent.HumanAgent.utterance_callback">
+<code class="descname">utterance_callback</code><span class="sig-paren">(</span><em>episode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/agent.html#HumanAgent.utterance_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.agent.HumanAgent.utterance_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#due.agent.Agent.utterance_callback" title="due.agent.Agent.utterance_callback"><code class="xref py py-meth docutils literal"><span class="pre">due.agent.Agent.utterance_callback()</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Due</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="episode.html">Episode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event.html">Event</a></li>
+<li class="toctree-l1"><a class="reference internal" href="action.html">Action</a></li>
+<li class="toctree-l1"><a class="reference internal" href="brain.html">Brain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="persistence.html">Persistence</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to Due’s documentation!</a></li>
+      <li>Next: <a href="episode.html" title="next chapter">Episode</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Dario Chiappetta.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/agent.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

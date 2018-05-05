@@ -1,0 +1,198 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>due.event &#8212; Due 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for due.event</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">dateutil.parser</span> <span class="k">import</span> <span class="n">parse</span> <span class="k">as</span> <span class="n">dateutil_parse</span>
+
+<span class="kn">from</span> <span class="nn">due.action</span> <span class="k">import</span> <span class="n">Action</span>
+<span class="kn">from</span> <span class="nn">due.util</span> <span class="k">import</span> <span class="n">full_class_name</span>
+
+<span class="n">EventTuple</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;EventTuple&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;timestamp&#39;</span><span class="p">,</span> <span class="s1">&#39;agent&#39;</span><span class="p">,</span> <span class="s1">&#39;payload&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="Event"><a class="viewcode-back" href="../../event.html#due.event.Event">[docs]</a><span class="k">class</span> <span class="nc">Event</span><span class="p">(</span><span class="n">EventTuple</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	An Event is anything that can happen in an Episode. It can be an Utterance,</span>
+<span class="sd">	an Action, or a Leave event (see :class:`due.event.Event.Type`).</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Event.Type"><a class="viewcode-back" href="../../event.html#due.event.Event.Type">[docs]</a>	<span class="k">class</span> <span class="nc">Type</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Enumerates the three Event types:</span>
+
+<span class="sd">		* `Event.Type.Utterance`</span>
+<span class="sd">		* `Event.Type.Leave`</span>
+<span class="sd">		* `Event.Type.Action`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">Utterance</span> <span class="o">=</span> <span class="s2">&quot;utterance&quot;</span>
+		<span class="n">Leave</span> <span class="o">=</span> <span class="s2">&quot;leave&quot;</span>
+		<span class="n">Action</span> <span class="o">=</span> <span class="s2">&quot;action&quot;</span></div>
+
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+		<span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+		<span class="c1"># EventTuple.__init__(self, *args, **kwargs)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">datetime</span><span class="p">):</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;timestamp value is not a `datetime` instance: &#39;</span> \
+							     <span class="s1">&#39;please update your code to avoid unexpected errors.&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="p">,</span> <span class="n">agent</span><span class="o">.</span><span class="n">Agent</span><span class="p">):</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;agent value is an `Agent` object: please provide a&#39;</span> \
+				                 <span class="s1">&#39;string ID instead to ensure correct serialization.&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">acted</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Event.mark_acted"><a class="viewcode-back" href="../../event.html#due.event.Event.mark_acted">[docs]</a>	<span class="k">def</span> <span class="nf">mark_acted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Mark the Event as acted storing the timestamp of the moment the event</span>
+<span class="sd">		was acted. An Event is acted when it&#39;s issued in an episode.</span>
+
+<span class="sd">		If no timestamp is given, the current timestamp is used.</span>
+
+<span class="sd">		:param timestamp: timestamp of the moment the event was acted</span>
+<span class="sd">		:type timestamp: `datetime`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">acted</span> <span class="o">=</span> <span class="n">timestamp</span> <span class="k">if</span> <span class="n">timestamp</span> <span class="k">else</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Event.save"><a class="viewcode-back" href="../../event.html#due.event.Event.save">[docs]</a>	<span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Export the Event to a serializable `list`.</span>
+
+<span class="sd">		:return: a saved Event</span>
+<span class="sd">		:rtype: `list`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+			                   <span class="n">timestamp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="o">.</span><span class="n">isoformat</span><span class="p">())</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Event</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">Action</span><span class="p">:</span>
+			<span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">payload</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">save</span><span class="p">())</span>
+		<span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Event.load"><a class="viewcode-back" href="../../event.html#due.event.Event.load">[docs]</a>	<span class="nd">@staticmethod</span>
+	<span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">saved</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Load an Event that was saved with :func:`due.event.Event.save`</span>
+
+<span class="sd">		:param saved: the saved Event</span>
+<span class="sd">		:type saved: `list`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">loaded_type</span> <span class="o">=</span> <span class="n">Event</span><span class="o">.</span><span class="n">Type</span><span class="p">(</span><span class="n">saved</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+		<span class="n">loaded_payload</span> <span class="o">=</span> <span class="n">Action</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">saved</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="k">if</span> <span class="n">loaded_type</span> <span class="o">==</span> <span class="n">Event</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">Action</span> <span class="k">else</span> <span class="n">saved</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+		<span class="k">return</span> <span class="n">Event</span><span class="p">(</span><span class="n">loaded_type</span><span class="p">,</span>
+			         <span class="n">dateutil_parse</span><span class="p">(</span><span class="n">saved</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+			         <span class="n">saved</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+			         <span class="n">loaded_payload</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Event.clone"><a class="viewcode-back" href="../../event.html#due.event.Event.clone">[docs]</a>	<span class="k">def</span> <span class="nf">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Clone the Event into a new object.</span>
+
+<span class="sd">		:return: a new Event object that is a clone of `self`</span>
+<span class="sd">		:rtype: :class:`due.event.Event`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">return</span> <span class="n">Event</span><span class="p">(</span><span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span></div></div>
+
+<span class="c1"># Quick fix for circular dependencies</span>
+<span class="kn">from</span> <span class="nn">due</span> <span class="k">import</span> <span class="n">agent</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Due</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../episode.html">Episode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../event.html">Event</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../action.html">Action</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../brain.html">Brain</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../persistence.html">Persistence</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Dario Chiappetta.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

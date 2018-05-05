@@ -1,0 +1,153 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Persistence &#8212; Due 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Brain" href="brain.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-due.persistence">
+<span id="persistence"></span><h1>Persistence<a class="headerlink" href="#module-due.persistence" title="Permalink to this headline">¶</a></h1>
+<p>This module defines the way saved entities (see <cite>save</cite> method of <cite>Agent</cite>, <cite>Episode</cite>,
+<cite>Brain</cite>, etc) are serialized to files.</p>
+<p>Currently, this is simply done with pickle.</p>
+<dl class="function">
+<dt id="due.persistence.deserialize">
+<code class="descclassname">due.persistence.</code><code class="descname">deserialize</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/persistence.html#deserialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.persistence.deserialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deserialize an object reading from the given path.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<cite>str</cite>) – the path where the object was serialized</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the deserialized object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><em>many</em></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="due.persistence.serialize">
+<code class="descclassname">due.persistence.</code><code class="descname">serialize</code><span class="sig-paren">(</span><em>saved_thing</em>, <em>path</em>, <em>overwrite=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/due/persistence.html#serialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#due.persistence.serialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize the given object (return value of the <cite>save</cite> method of the Project
+entities - ie. <a class="reference internal" href="agent.html#due.agent.Agent" title="due.agent.Agent"><code class="xref py py-class docutils literal"><span class="pre">due.agent.Agent</span></code></a>, <a class="reference internal" href="episode.html#due.episode.Episode" title="due.episode.Episode"><code class="xref py py-class docutils literal"><span class="pre">due.episode.Episode</span></code></a>, …)
+to a file with the given path.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>saved_thing</strong> – the saved object</li>
+<li><strong>path</strong> (<cite>str</cite>) – path of the output file</li>
+<li><strong>overwrite</strong> (<cite>bool</cite>) – overwrite if existing</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Due</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="episode.html">Episode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="event.html">Event</a></li>
+<li class="toctree-l1"><a class="reference internal" href="action.html">Action</a></li>
+<li class="toctree-l1"><a class="reference internal" href="brain.html">Brain</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Persistence</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="brain.html" title="previous chapter">Brain</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Dario Chiappetta.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/persistence.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
