@@ -18,7 +18,7 @@ due.egg-info/
 .eggs/
 
 # Sphinx
-doc/_build
+docs/_build
 
 # Installer logs
 pip-log.txt
