@@ -1,4 +1,4 @@
-from due.util import full_class_name
+from due.util.python import full_class_name
 
 import logging
 import uuid
