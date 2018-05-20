@@ -1,6 +1,6 @@
 import unittest
 
-from due.util import *
+from due.util.python import *
 
 class TestUtil(unittest.TestCase):
 

@@ -202,4 +202,4 @@ class CosineBrain(Brain):
 # Quick fix for circular dependencies
 from due.episode import Episode
 from due.event import Event
-from due.util import dynamic_import
+from due.util.python import dynamic_import

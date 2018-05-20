@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
-from due.util import full_class_name, dynamic_import
+from due.util.python import full_class_name, dynamic_import
 
 #
 # Action Interface

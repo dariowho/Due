@@ -5,7 +5,7 @@ import logging
 from dateutil.parser import parse as dateutil_parse
 
 from due.action import Action
-from due.util import full_class_name
+from due.util.python import full_class_name
 
 EventTuple = namedtuple('EventTuple', ['type', 'timestamp', 'agent', 'payload'])
 
