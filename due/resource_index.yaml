@@ -1,0 +1,7 @@
+# This file will be read in `due.__init__` to instanciate the Resource Manager
+
+resources:
+  - name: cornell
+    description: the Cornell Movie-Dialogs Corpus (http://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html)
+    url: http://www.cs.cornell.edu/~cristian/data/cornell_movie_dialogs_corpus.zip
+    filename: cornell_movie_dialogs_corpus.zip
