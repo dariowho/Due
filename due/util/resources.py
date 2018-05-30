@@ -91,7 +91,7 @@ class ResourceManager(object):
 		
 		return open(self.resource_path(name), mode)
 
-	def open_resource_file(self, name, filename, binary=False):
+	def open_resource_file(self, name, filename, binary=False, encoding='utf-8'):
 		"""
 		If the given resource is a compressed archive, extract the given filename
 		and return a file pointer to the extracted file.
@@ -115,7 +115,7 @@ class ResourceManager(object):
 		zipfile = ZipFile(path)
 		f =  zipfile.open(filename, mode='r')
 
-		return f if binary else TextIOWrapper(f)
+		return f if binary else TextIOWrapper(f, encoding) # TODO: test encoding
 
 	def resource_path(self, name):
 		"""

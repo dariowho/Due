@@ -53,18 +53,18 @@ class Episode(object):
 		}
 
 	@staticmethod
-	def load(other):
+	def load(saved_episode):
 		"""
 		Loads an Episode as it was saved by :meth:`due.episode.Episode.save`.
 
-		:param other: the episode to be loaded
-		:type other: `dict`
-		:return: an Episode object representing `other`
+		:param saved_episode: the episode to be loaded
+		:type saved_episode: `dict`
+		:return: an Episode object representing `saved_episode`
 		:rtype: :class:`due.episode.Episode`
 		"""
-		result = Episode(other['starter_agent'], other['invited_agents'][0])
-		result.id = other['id']
-		result.events = [Event.load(e) for e in other['events']]
+		result = Episode(saved_episode['starter_agent'], saved_episode['invited_agents'][0])
+		result.id = saved_episode['id']
+		result.events = [Event.load(e) for e in saved_episode['events']]
 		return result
 
 class LiveEpisode(Episode):
