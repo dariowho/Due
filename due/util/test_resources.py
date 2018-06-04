@@ -2,8 +2,21 @@ import unittest
 import os
 import tempfile
 import shutil
+from io import StringIO
 
 from due.util.resources import *
+
+TEST_YAML = """
+resources:
+  - name: first_fake_resource
+    description: a fake resource
+    url: http://www.fake-address.com/fake-resource.zip
+    filename: first-fake-resource.zip
+  - name: second_fake_resource
+    description: another fake resource
+    url: http://www.other-fake-address.com/fake-resource.zip
+    filename: second-fake-resource.zip
+"""
 
 class TestResourceManager(unittest.TestCase):
 
@@ -20,6 +33,16 @@ class TestResourceManager(unittest.TestCase):
 
 			with self.assertRaises(ValueError):
 				rm.register_resource('test.duplicate.resource', 'a duplicate resource', 'http://fake.com/res.zip', 'test_resource.zip')
+
+	def test_register_yaml(self):
+		with tempfile.TemporaryDirectory() as tmp_dir:
+			rm = ResourceManager(resource_folder=tmp_dir)
+			rm.register_yaml(StringIO(TEST_YAML))
+			
+			self.assertEqual(rm.resources, {
+				'first_fake_resource': ResourceRecord('first_fake_resource', 'a fake resource', 'http://www.fake-address.com/fake-resource.zip', 'first-fake-resource.zip'),
+				'second_fake_resource': ResourceRecord('second_fake_resource', 'another fake resource', 'http://www.other-fake-address.com/fake-resource.zip', 'second-fake-resource.zip'),
+			})
 
 	def test_open_resource(self):
 		with tempfile.TemporaryDirectory() as tmp_dir:

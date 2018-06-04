@@ -84,7 +84,7 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     # install_requires=['gensim', 'shorttext'],
-    install_requires=['future', 'six', 'numpy', 'scipy', 'sleekxmpp', 'sklearn', 'nltk', 'python-magic'],
+    install_requires=['future', 'six', 'numpy', 'scipy', 'sleekxmpp', 'sklearn', 'nltk', 'python-magic', 'pyyaml'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,

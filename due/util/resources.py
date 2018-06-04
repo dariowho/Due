@@ -4,6 +4,7 @@ downloaded, cached and retrieved in Due.
 """
 import os
 import logging
+import yaml
 from io import TextIOWrapper
 from zipfile import ZipFile
 from collections import namedtuple
@@ -52,6 +53,31 @@ class ResourceManager(object):
 		self.resources[name] = ResourceRecord(name, description, url, filename)
 		self.resource_filenames[filename] = name
 
+	def register_yaml(self, yaml_stream):
+		"""
+		Read a YAML file containing an index of resources. Such a file must contain a
+		`resources` key, having a list of objects as values. These objects must contain
+		the `name`, `description`, `url` and `filename` keys (see :meth:`register_resource`
+		for an explanation of these values).
+
+		This is an example content for a YAML file specifying one resource to register:
+
+		```
+		resources:
+		  - name: cornell
+		    description: the Cornell Movie-Dialogs Corpus (http://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html)
+		    url: http://www.cs.cornell.edu/~cristian/data/cornell_movie_dialogs_corpus.zip
+		    filename: cornell_movie_dialogs_corpus.zip
+		```
+
+		:param path: pointer to the YAML file
+		:type path: `file object`
+		"""
+		resource_list = yaml.load(yaml_stream)['resources']
+
+		for r in resource_list:
+			self.register_resource(r['name'], r['description'], r['url'], r['filename'])
+
 	def open_resource(self, name, mode="r"):
 		"""
 		Return a file object representing the resource with the given name.
@@ -65,7 +91,7 @@ class ResourceManager(object):
 		
 		return open(self.resource_path(name), mode)
 
-	def open_resource_file(self, name, filename, binary=False):
+	def open_resource_file(self, name, filename, binary=False, encoding='utf-8'):
 		"""
 		If the given resource is a compressed archive, extract the given filename
 		and return a file pointer to the extracted file.
@@ -89,7 +115,7 @@ class ResourceManager(object):
 		zipfile = ZipFile(path)
 		f =  zipfile.open(filename, mode='r')
 
-		return f if binary else TextIOWrapper(f)
+		return f if binary else TextIOWrapper(f, encoding) # TODO: test encoding
 
 	def resource_path(self, name):
 		"""
@@ -107,4 +133,4 @@ class ResourceManager(object):
 			print( ("Couldn't find resource '%s'. Download the file at %s and "
 				    "copy it in your resource folder (%s) with name '%s' to make "
 				    "it available in Due.") % (name, record.url, self.resource_folder, record.filename))
-			raise ValueError("Resource not found: %s" % name)
+			raise ValueError("Resource not found: %s. Please refer to the logs for guidance." % name)
