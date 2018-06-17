@@ -53,7 +53,8 @@ class DueBot(Due, ClientXMPP):
 				return
 			if self._current_episode is None:
 				self._current_episode = Episode(human_agent, self)
-			self._current_episode.add_utterance(human_agent, msg['body'])
+			utterance = Event(Event.Type.Utterance, datetime.now(), human_agent.id, msg['body'])
+			self._current_episode.add_event(human_agent, utterance)
 
 	def act_events(self, events, episode):
 		for e in events:
@@ -95,7 +96,8 @@ class DueBot(Due, ClientXMPP):
 		if msg['body'] == ',,,leave':
 			msg.reply("[you left the episode]").send()
 			human_agent = self._fetch_or_create_human_agent(DueBot.DEFAULT_HUMAN_JID)
-			self._current_episode.leave(human_agent)
+			leave_event = Event(Event.Type.Leave, datetime.now(), human_agent.id, None)
+			self._current_episode.add_event(human_agent, leave_event)
 			self._current_episode = None
 			self._last_message = None
 		return True
