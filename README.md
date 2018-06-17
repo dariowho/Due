@@ -26,6 +26,7 @@ This will produce a `due-0.0.1.tar.gz` package in the `dist/` folder. You can in
 Once the package is installed, you can run a simple agent over XMPP with the following Python code:
 
 ```python
+from due import agent
 from due.xmpp import DueBot
 bot = DueBot("<XMPP_ACCOUNT_USERNAME>", "<XMPP_ACCOUNT_PASSWORD>")
 

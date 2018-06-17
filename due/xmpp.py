@@ -1,9 +1,10 @@
-from due.agent import Due, HumanAgent
-from due.episode import Episode
-from due.event import Event
-
 import logging
 import uuid
+from datetime import datetime
+
+from due.agent import Due, HumanAgent
+from due.episode import LiveEpisode
+from due.event import Event
 
 from sleekxmpp import ClientXMPP
 from sleekxmpp.exceptions import IqError, IqTimeout
@@ -34,7 +35,7 @@ class DueBot(Due, ClientXMPP):
 		ClientXMPP.__init__(self, jid, password)
 
 		self._humans = {}
-		self._current_episode = None
+		self._live_episode = None
 		self._last_message = None
 		self._logger = logging.getLogger(__name__ + ".DueBot")
 
@@ -51,10 +52,10 @@ class DueBot(Due, ClientXMPP):
 			self._last_message = msg
 			if self._handle_command_message(msg):
 				return
-			if self._current_episode is None:
-				self._current_episode = Episode(human_agent, self)
+			if self._live_episode is None:
+				self._live_episode = LiveEpisode(human_agent, self)
 			utterance = Event(Event.Type.Utterance, datetime.now(), human_agent.id, msg['body'])
-			self._current_episode.add_event(human_agent, utterance)
+			self._live_episode.add_event(human_agent, utterance)
 
 	def act_events(self, events, episode):
 		for e in events:
@@ -97,7 +98,7 @@ class DueBot(Due, ClientXMPP):
 			msg.reply("[you left the episode]").send()
 			human_agent = self._fetch_or_create_human_agent(DueBot.DEFAULT_HUMAN_JID)
 			leave_event = Event(Event.Type.Leave, datetime.now(), human_agent.id, None)
-			self._current_episode.add_event(human_agent, leave_event)
-			self._current_episode = None
+			self._live_episode.add_event(human_agent, leave_event)
+			self._live_episode = None
 			self._last_message = None
 		return True
