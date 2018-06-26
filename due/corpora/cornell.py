@@ -29,8 +29,10 @@ rm = resource_manager
 
 START_DATE = datetime(2011, 6, 15, 12, 0)
 
-
 def load():
+	return list(episode_generator())
+
+def episode_generator():
 	"""
 	Returns the Cornell Movie-Dialog Corpus as a list of
 	:class:`due.episode.Episode`s
@@ -41,8 +43,6 @@ def load():
 	:rtype: `list` of :class:`due.episode.Episode`
 	"""
 	global current_date
-
-	result = []
 
 	with _open_cornell('movie_conversations.txt') as f:
 		df_conversations = _read_cornell(f, ['character_id_A', 'character_id_B', 'movie_id', 'utterance_list'])
@@ -59,9 +59,8 @@ def load():
 	for conversation in tqdm(df_conversations.itertuples(), total=len(df_conversations)):
 		events = [_build_event(l_id, df_lines) for l_id in conversation.utterance_list]
 		episode = _build_episode(conversation, events)
-		result.append(episode)
+		yield episode
 
-	return result
 
 #
 # Helpers
@@ -72,7 +71,7 @@ def _open_cornell(filename):
 	return rm.open_resource_file('corpora.cornell', filename_full, binary=False, encoding='iso-8859-1')
 
 def _read_cornell(file_buffer, columns):
-	return pd.read_csv(file_buffer, sep=re.escape(' +++$+++ '), names=columns)
+	return pd.read_csv(file_buffer, sep=re.escape(' +++$+++ '), names=columns, engine='python')
 
 current_date = START_DATE
 def _build_event(line_id, df_lines):
