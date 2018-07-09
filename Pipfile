@@ -8,10 +8,14 @@ name = "pypi"
 python-dateutil = "*"
 tqdm = "*"
 pandas = "*"
+spacy = "*"
+gensim = "*"
+torch = "*"
 
 [dev-packages]
 nose = "*"
 ipython = "*"
+jupyter = "*"
 
 [requires]
 python_version = "3.6"

@@ -3,6 +3,7 @@ from due.util.python import full_class_name
 import logging
 import uuid
 import copy
+from functools import lru_cache
 
 UTTERANCE_LABEL = 'utterance'
 
@@ -100,6 +101,52 @@ class LiveEpisode(Episode):
 
 	def _other_agents(self, agent):
 		return [self.starter] if agent == self.invited else [self.invited]
+
+def _is_utterance(event):
+	return event.type == Event.Type.Utterance
+
+def extract_utterance_pairs(episode, preprocess_f=None):
+	"""
+	Process Events in an Episode, extracting all the Utterance Event pairs that
+	can be interpreted as one dialogue turn (ie. an Agent's utterance, and a
+	different Agent's response).
+
+	In particular, Event pairs are extracted from the Episode so that:
+
+	* Both Events are Utterances (currently, non-utterances will raise an exception)
+	* The second Event immediately follows the first
+	* The two Events are acted by two different Agents
+
+	This means that if an utterance has more than one answers, only the first
+	one will be included in the result.
+
+	If a `preprocess_f` function is specified, resulting utterances will be run
+	through this function before being returned. A LRU Cache is applied to
+	`preprocess_f`, as most sentences will be returned as both utterances and
+	answers/
+
+	Return two lists of the same length, so that each utterance `X_i` in the
+	first list has its response `y_i` in the second.
+
+	:param episode: an Episode
+	:type episode: :class:`due.episode.Episode`
+	:param preprocess_f: when given, sentences will be run through this function before being returned
+	:type preprocess_f: `func`
+	:return: a list of utterances and the list of their answers (one per utterance)
+	:rtype: (`list`, `list`)
+	"""
+	preprocess_f = lru_cache(4)(preprocess_f) if preprocess_f else lambda x: x
+	result_X = []
+	result_y = []
+	for e1, e2 in zip(episode.events, episode.events[1:]):
+		if not _is_utterance(e1) or not _is_utterance(e2):
+			raise NotImplementedError("Non-utterance Events are not supported yet")
+
+		if e1.agent != e2.agent:
+			result_X.append(preprocess_f(e1.payload))
+			result_y.append(preprocess_f(e2.payload))
+
+	return result_X, result_y
 
 # Quick fix for circular dependencies
 from due.event import Event

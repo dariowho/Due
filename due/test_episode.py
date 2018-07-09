@@ -133,3 +133,74 @@ class TestEpisode(unittest.TestCase):
 		self.assertEqual(loaded_e.events[0], utterance1) 
 		self.assertEqual(loaded_e.events[1], action1) 
 		self.assertEqual(loaded_e.events[2], leave1) 
+
+class TestExtractUtterancePairs(unittest.TestCase):
+
+	def test_alternate(self):
+		e = Episode('a', 'b')
+		e.events = [
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'aaa'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'bbb'),
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'ccc'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'ddd')
+		]
+		X, y = extract_utterance_pairs(e)
+		self.assertEqual(X, ['aaa', 'bbb', 'ccc'])
+		self.assertEqual(y, ['bbb', 'ccc', 'ddd'])
+
+	def test_repeated(self):
+		e = Episode('a', 'b')
+		e.events = [
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'aaa'),
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'bbb'),
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'ccc'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'ddd')
+		]
+		X, y = extract_utterance_pairs(e)
+		self.assertEqual(X, ['ccc'])
+		self.assertEqual(y, ['ddd'])
+
+		e = Episode('a', 'b')
+		e.events = [
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'aaa'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'bbb'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'ccc'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'ddd')
+		]
+		X, y = extract_utterance_pairs(e)
+		self.assertEqual(X, ['aaa'])
+		self.assertEqual(y, ['bbb'])
+
+		e = Episode('a', 'b')
+		e.events = [
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'aaa'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'bbb'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'ccc'),
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'ddd')
+		]
+		X, y = extract_utterance_pairs(e)
+		self.assertEqual(X, ['aaa', 'ccc'])
+		self.assertEqual(y, ['bbb', 'ddd'])
+
+		e = Episode('a', 'b')
+		e.events = [
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'aaa'),
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'bbb'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'ccc'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'ddd')
+		]
+		X, y = extract_utterance_pairs(e)
+		self.assertEqual(X, ['bbb'])
+		self.assertEqual(y, ['ccc'])
+
+	def test_preprocess_f(self):
+		e = Episode('a', 'b')
+		e.events = [
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'AaA'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'BBB'),
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'Ccc'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'ddd')
+		]
+		X, y = extract_utterance_pairs(e, lambda x: x.lower())
+		self.assertEqual(X, ['aaa', 'bbb', 'ccc'])
+		self.assertEqual(y, ['bbb', 'ccc', 'ddd'])
