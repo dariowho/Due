@@ -9,6 +9,10 @@ import numpy as np
 from six import iteritems
 from tqdm import tqdm
 
+UNK = '<UNK>'
+SOS = '<SOS>'
+EOS = '<EOS>'
+
 class Vocabulary():
 	def __init__(self):
 		self.word_to_index = {}
@@ -16,9 +20,9 @@ class Vocabulary():
 		self.index_to_count = defaultdict(int)
 		self.current_index = 0
 
-		self.add_word('<UNK>') # Unknown token
-		self.add_word('<SOS>') # Start of String
-		self.add_word('<EOS>') # End of String
+		self.add_word(UNK) # Unknown token
+		self.add_word(SOS) # Start of String
+		self.add_word(EOS) # End of String
 
 	def add_word(self, word):
 		"""
@@ -49,7 +53,7 @@ class Vocabulary():
 		"""
 		if word in self.word_to_index:
 			return self.word_to_index[word]
-		return self.word_to_index['<UNK>']
+		return self.word_to_index[UNK]
 
 	def word(self, index):
 		"""
@@ -115,7 +119,7 @@ def get_embedding_matrix(vocabulary, embeddings_stream, embedding_dim, stub=Fals
 	if stub:
 		return np.random.rand(vocabulary.size(), embedding_dim)
 
-	unk_index = vocabulary.index('<UNK>')
+	unk_index = vocabulary.index(UNK)
 	result = np.zeros((vocabulary.size(), 300))
 	for line in tqdm(embeddings_stream):
 		line_split = line.split()
@@ -123,7 +127,7 @@ def get_embedding_matrix(vocabulary, embeddings_stream, embedding_dim, stub=Fals
 		index = vocabulary.index(word)
 		if index != unk_index:
 			vector = [float(x) for x in line_split[1:]]
-			result[index,:] = vector
-	sos_index = vocabulary.index('<SOS>')
-	result[sos_index,:] = np.ones(300)
+			result[index, :] = vector
+	sos_index = vocabulary.index(SOS)
+	result[sos_index, :] = np.ones(300)
 	return result
