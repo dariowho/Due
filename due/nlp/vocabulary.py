@@ -9,6 +9,8 @@ import numpy as np
 from six import iteritems
 from tqdm import tqdm
 
+from due import __version__
+
 UNK = '<UNK>'
 SOS = '<SOS>'
 EOS = '<EOS>'
@@ -75,6 +77,29 @@ class Vocabulary():
 		"""
 		return len(self.word_to_index)
 
+	def save(self):
+		"""
+		Return a serializable `dict` representing the Vocabulary.
+
+		:return: a serializable representation of self
+		:rtype: `dict`
+		"""
+		return {
+			'_version': __version__,
+			'word_to_index': self.word_to_index,
+	    	'index_to_word': self.index_to_word,
+			'index_to_count': self.index_to_count,
+			'current_index': self.current_index,
+		}
+
+	@staticmethod
+	def load(data):
+		result = Vocabulary()
+		result.word_to_index = data['word_to_index']
+		result.index_to_word = data['index_to_word']
+		result.index_to_count = data['index_to_count']
+		result.current_index = data['current_index']
+		return result
 
 def prune_vocabulary(vocabulary, min_occurrences):
 	"""

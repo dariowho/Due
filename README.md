@@ -23,6 +23,12 @@ This will produce a `due-0.0.1.tar.gz` package in the `dist/` folder. You can in
     $ cd dist/
     $ pip install due-0.0.1.tar.gz
 
+Additionally, Spacy's English resources need to be downloaded:
+
+    $ pipenv run python -m spacy download en
+
+## Run
+
 Once the package is installed, you can run a simple agent over XMPP with the following Python code:
 
 ```python
