@@ -142,7 +142,7 @@ def extract_utterance_pairs(episode, preprocess_f=None):
 		if not _is_utterance(e1) or not _is_utterance(e2):
 			raise NotImplementedError("Non-utterance Events are not supported yet")
 
-		if e1.agent != e2.agent:
+		if e1.agent != e2.agent and e1.payload and e2.payload:
 			result_X.append(preprocess_f(e1.payload))
 			result_y.append(preprocess_f(e2.payload))
 

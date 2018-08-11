@@ -7,7 +7,12 @@ from collections import defaultdict
 
 import numpy as np
 from six import iteritems
-from tqdm import tqdm
+
+from due.util.python import is_notebook
+if is_notebook():
+	from tqdm import tqdm_notebook as tqdm
+else:
+	import tqdm
 
 from due import __version__
 

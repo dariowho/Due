@@ -32,3 +32,17 @@ def dynamic_import(name):
 	for c in components[1:]:
 		result = getattr(result, c)
 	return result
+
+def is_notebook():
+	"""
+	Detect whether `due` is running in a Jupyter Notebook. This is needed
+	because TQDM, our progress bar implementation of choice, has
+	Jupyter-specific imports.
+	"""
+	try:
+		if type(get_ipython()).__module__.startswith('ipykernel.'):
+			return True
+	except NameError:
+		return False
+
+	return False
