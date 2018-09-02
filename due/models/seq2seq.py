@@ -59,7 +59,9 @@ class EncoderRNNBatch(nn.Module):
 		self.embedding = nn.Embedding.from_pretrained(embedding_matrix, freeze=False)
 		embedding_dim = self.embedding.embedding_dim
 
-		self.gru = nn.GRU(embedding_dim, hidden_size)
+		self.gru = nn.GRU(embedding_dim, hidden_size, num_layers=num_rnn_layers)
+
+		self._num_rnn_layers = num_rnn_layers
 
 	def forward(self, input_data, batch_size, hidden):
 		embedded = self.embedding(input_data).view(1, batch_size, -1)
@@ -68,7 +70,7 @@ class EncoderRNNBatch(nn.Module):
 		return output, hidden
 
 	def init_hidden(self, batch_size):
-		return torch.zeros(1, batch_size, self.hidden_size, device=DEVICE)
+		return torch.zeros(self._num_rnn_layers, batch_size, self.hidden_size, device=DEVICE)
 
 class DecoderRNNBatch(nn.Module):
 	def __init__(self, hidden_size, embedding_matrix, num_rnn_layers=1):
@@ -79,9 +81,11 @@ class DecoderRNNBatch(nn.Module):
 		embedding_dim = self.embedding.embedding_dim
 		vocabulary_size = self.embedding.num_embeddings
 
-		self.gru = nn.GRU(embedding_dim, hidden_size)
+		self.gru = nn.GRU(embedding_dim, hidden_size, num_layers=num_rnn_layers)
 		self.out = nn.Linear(hidden_size, vocabulary_size)
 		self.softmax = nn.LogSoftmax(dim=1)
+
+		self._num_rnn_layers = num_rnn_layers
 
 	def forward(self, input_data, batch_size, hidden):
 		output = self.embedding(input_data).view(1, batch_size, -1)
@@ -92,7 +96,7 @@ class DecoderRNNBatch(nn.Module):
 		return output, hidden
 
 	def init_hidden(self, batch_size):
-		return torch.zeros(1, batch_size, self.hidden_size, device=DEVICE)
+		return torch.zeros(self._num_rnn_layers, batch_size, self.hidden_size, device=DEVICE)
 
 #
 # Brain
