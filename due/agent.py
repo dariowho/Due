@@ -20,7 +20,7 @@ import logging
 from due.episode import LiveEpisode
 from due.event import Event
 from due.brain import Brain
-from due.brain import CosineBrain
+from due.models.vector_similarity import TfIdfCosineBrain
 
 class Agent(metaclass=ABCMeta):
 	"""
@@ -279,7 +279,7 @@ class Due(Agent):
 		if isinstance(brain, dict):
 			brain = Brain.load(brain)
 
-		brain = brain if brain is not None else CosineBrain()
+		brain = brain if brain is not None else TfIdfCosineBrain()
 		self._brain = brain
 		self._logger = logging.getLogger(__name__ + ".Due")
 

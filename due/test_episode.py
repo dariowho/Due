@@ -134,6 +134,50 @@ class TestEpisode(unittest.TestCase):
 		self.assertEqual(loaded_e.events[1], action1) 
 		self.assertEqual(loaded_e.events[2], leave1) 
 
+class TestExtractUtterances(unittest.TestCase):
+
+	def test_utterances_only(self):
+		e = Episode('a', 'b')
+		e.events = [
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'aaa'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'bbb'),
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'ccc'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'ddd')
+		]
+		X = extract_utterances(e)
+		self.assertEqual(X, ['aaa', 'bbb', 'ccc', 'ddd'])
+
+		X = extract_utterances(e, preprocess_f=lambda x: x.upper())
+		self.assertEqual(X, ['AAA', 'BBB', 'CCC', 'DDD'])
+
+	def test_no_holes(self):
+		e = Episode('a', 'b')
+		e.events = [
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'aaa'),
+			Event(Event.Type.Action, datetime.now(), 'b', None),
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'ccc'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'ddd')
+		]
+		X = extract_utterances(e)
+		self.assertEqual(X, ['aaa', 'ccc', 'ddd'])
+
+		X = extract_utterances(e, preprocess_f=lambda x: x.upper())
+		self.assertEqual(X, ['AAA', 'CCC', 'DDD'])
+
+	def test_keep_holes(self):
+		e = Episode('a', 'b')
+		e.events = [
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'aaa'),
+			Event(Event.Type.Action, datetime.now(), 'b', None),
+			Event(Event.Type.Utterance, datetime.now(), 'a', 'ccc'),
+			Event(Event.Type.Utterance, datetime.now(), 'b', 'ddd')
+		]
+		X = extract_utterances(e, keep_holes=True)
+		self.assertEqual(X, ['aaa', None, 'ccc', 'ddd'])
+
+		X = extract_utterances(e, preprocess_f=lambda x: x.upper(), keep_holes=True)
+		self.assertEqual(X, ['AAA', None, 'CCC', 'DDD'])
+
 class TestExtractUtterancePairs(unittest.TestCase):
 
 	def test_alternate(self):

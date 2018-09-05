@@ -184,7 +184,7 @@ class EncoderDecoderBrain(Brain):
 		self._logger.info("Extracting dataset from episodes")
 		for e in tqdm(episodes):
 			try:
-				episode_X, episode_y = extract_utterance_pairs(e)
+				episode_X, episode_y = extract_utterance_pairs(e, preprocess_f=normalize_sentence)
 			except AttributeError:
 				self._logger.warning("Skipping episode with events: %s" % e.events)
 			self.X.extend(episode_X)
@@ -231,6 +231,7 @@ class EncoderDecoderBrain(Brain):
 		"""
 		result = []
 
+		sentence = normalize_sentence(sentence)
 		input_tensor = batch_to_tensor([sentence], self.vocabulary, device=DEVICE)
 		input_length = input_tensor.size(0)
 		batch_size = input_tensor.size(1)

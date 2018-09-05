@@ -3,7 +3,7 @@ from functools import lru_cache
 
 import spacy
 
-def tokenize_sentence(sentence, language):
+def tokenize_sentence(sentence, language, lemmatize):
 	"""
 	Wraps around Spacy's tokenizer returning a list of string tokens for the
 	given sentence.
@@ -14,9 +14,12 @@ def tokenize_sentence(sentence, language):
 	:type language: `str`
 	"""
 	s_spacy = _load_spacy(language)(sentence)
-	return [str(token) for token in s_spacy]
+	if lemmatize:
+		return [str(token.lemma) for token in s_spacy]
+	else:
+		return [str(token) for token in s_spacy]
 
-def normalize_sentence(sentence, return_tokens=False, language='en'):
+def normalize_sentence(sentence, return_tokens=False, language='en', lemmatize=False):
 	"""
 	Return a normalized version of the input sentence. Normalization is
 	currently limited to:
@@ -30,6 +33,7 @@ def normalize_sentence(sentence, return_tokens=False, language='en'):
 	:param sentence: a sentence
 	:type sentence: `str`
 	:param return_tokens: whether to return a list of `str` tokens or a whole string
+	:type return_tokens: `bool`
 	:param language: An ISO 639-1 language code ('en', 'it', ...)
 	:type language: `str`
 	:return: a normalized sentence
@@ -37,11 +41,11 @@ def normalize_sentence(sentence, return_tokens=False, language='en'):
 	"""
 	result = sentence.lower()
 	result = re.sub(r'\s+', ' ', result)
-	result = tokenize_sentence(result, language)
+	result = tokenize_sentence(result, language, lemmatize)
 	if not return_tokens:
 		result = ' '.join(result)
 	return result
 
 @lru_cache(8)
 def _load_spacy(language):
-	return spacy.load('en')
+	return spacy.load(language)

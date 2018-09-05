@@ -105,6 +105,32 @@ class LiveEpisode(Episode):
 def _is_utterance(event):
 	return event.type == Event.Type.Utterance
 
+def extract_utterances(episode, preprocess_f=None, keep_holes=False):
+	"""
+	Return all the utterances in an Episode as strings. If the `keep_holes`
+	parameter is set `True`, non-utterance events will be returned as well, as
+	`None` elements in the resulting list.
+
+	:param episode: the Episode to extract utterances from
+	:type episode: :class:`Episode`
+	:param preprocess_f: when given, sentences will be run through this function before being returned
+	:type preprocess_f: `func`
+	:param keep_holes: if `True`, `None` elements will be returned in place of non-utterance events.
+	:return: the list of utterances in the Episode
+	:rtype: `list` of `str`
+	"""
+	if not preprocess_f:
+		preprocess_f = lambda x: x
+
+	result = []
+	for e in episode.events:
+		if e.type == Event.Type.Utterance:
+			result.append(preprocess_f(e.payload))
+		elif keep_holes:
+			result.append(None)
+
+	return result
+
 def extract_utterance_pairs(episode, preprocess_f=None):
 	"""
 	Process Events in an Episode, extracting all the Utterance Event pairs that
