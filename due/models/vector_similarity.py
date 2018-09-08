@@ -1,11 +1,13 @@
 import logging
 from datetime import datetime
+from collections import namedtuple
 
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 
+import due
 from due.brain import Brain
 from due.event import Event
 from due.episode import Episode, extract_utterances
@@ -14,6 +16,8 @@ from due.nlp.preprocessing import normalize_sentence
 DEFAULT_PARAMETERS = {
 	'lemmatize_tokens': False,
 }
+
+_UtteranceMetadata = namedtuple('_UtteranceMetadata', ['episode', 'index'])
 
 class TfIdfCosineBrain(Brain):
 
@@ -25,23 +29,26 @@ class TfIdfCosineBrain(Brain):
 		self._vectorizer = TfidfVectorizer(tokenizer=_dummy_function, preprocessor=_dummy_function)
 
 		self._past_episodes = []
-		self._normalized_past_episodes = []
-		self._vectorized_past_episodes = []
+		self._normalized_past_utterances = [] # Sequence of all the utterances in the episodes
+		self._vectorized_past_utterances = []
+		self._past_utterances_metadata = []   # Per each utterance, remember source episode and position
 
 		if data:
-			past_episodes = [Episode.load(e) for e in data['past_episodes']]
-			self.learn_episodes(past_episodes)
+			self.parameters = data['parameters']
+			self._past_episodes = [Episode.load(e) for e in data['past_episodes']]
+			if self._past_episodes:
+				self._normalized_past_utterances = data['normalized_past_utterances']
+				self._past_utterances_metadata = self._load_past_utterances_metadata(data['past_utterances_metadata'], self._past_episodes)
+				self._vectorized_past_utterances = self._vectorizer.fit_transform(self._normalized_past_utterances)
 
 	def learn_episodes(self, episodes):
-		self._past_episodes.extend(episodes)
-
 		for e in tqdm(episodes):
-			new_utterances = [self._process_utterance(u) if u else None for u in extract_utterances(e)]
 			self._past_episodes.append(e)
-			self._normalized_past_episodes.append(new_utterances)
-
-		self._vectorizer.fit([x for e in self._normalized_past_episodes for x in e if x])
-		self._vectorized_past_episodes = self._vectorize_past_episodes()
+			for i, u in enumerate(extract_utterances(e)):
+				if u:
+					self._normalized_past_utterances.append(self._process_utterance(u))
+					self._past_utterances_metadata.append(_UtteranceMetadata(e, i))
+		self._vectorized_past_utterances = self._vectorizer.fit_transform(self._normalized_past_utterances)
 
 
 	def _process_utterance(self, utterance):
@@ -51,30 +58,23 @@ class TfIdfCosineBrain(Brain):
 			lemmatize=self.parameters['lemmatize_tokens']
 		)
 
-	def _vectorize_past_episodes(self):
-		"""
-		Makes a list of lists of vectors
-		"""
-		result = []
-		for e in self._normalized_past_episodes:
-			result.append([self._vectorizer.transform([s]) if s else None for s in e])
-			# result.append([np.asarray(self._vectorizer.transform([s])).squeeze() for s in e])
-		return result
-
 	def utterance_callback(self, episode):
 		last_utterance = episode.last_event(Event.Type.Utterance)
 		predicted_answer = self._predict(last_utterance.payload)
 		# TODO: add Agent ID to returned Event
-		return [Event(Event.Type.Utterance, datetime.now(), None, predicted_answer)] if predicted_answer else []
+		if predicted_answer:
+			return [Event(Event.Type.Utterance, datetime.now(), None, predicted_answer)]
+		return []
 
 
 	def _predict(self, sentence):
 		sentence_v = self._vectorizer.transform([self._process_utterance(sentence)])
-		scores = [[cosine_similarity(sentence_v, u)[0][0] if u is not None else 0 for u in episode] for episode in self._vectorized_past_episodes]
-		max_episode_index, max_episode_scores = max(enumerate(scores), key=lambda x: max(x[1]))
-		max_utterance_index = np.argmax(np.array(max_episode_scores))
+		scores = cosine_similarity(self._vectorized_past_utterances, sentence_v)
+		max_utterance_meta = self._past_utterances_metadata[np.argmax(scores)]
+		matched_past_episode = max_utterance_meta.episode
+		matched_index_in_episode = max_utterance_meta.index
 		try:
-			return self._past_episodes[max_episode_index].events[max_utterance_index+1].payload
+			return matched_past_episode.events[matched_index_in_episode+1].payload
 		except IndexError:
 			return None
 
@@ -86,14 +86,32 @@ class TfIdfCosineBrain(Brain):
 		self.learn_episode(episode)
 
 	def save(self):
-		# TODO: save processed sentences to improve loading speed
 		return {
+			'version': due.__version__,
 			'class': 'due.models.vector_similarity.TfIdfCosineBrain',
 			'data': {
 				'parameters': self.parameters,
-				'past_episodes': [e.save() for e in self._past_episodes]
+				'past_episodes': [e.save() for e in self._past_episodes],
+				'normalized_past_utterances': self._normalized_past_utterances,
+				'past_utterances_metadata': self._save_past_utterances_metadata()
 			}
 		}
+
+	def _save_past_utterances_metadata(self):
+		result = []
+		episode_index = 0
+		for pum in self._past_utterances_metadata:
+			episode_index = self._past_episode_index(pum.episode, start=episode_index)
+			result.append([episode_index, pum.index])
+		return result
+
+	def _load_past_utterances_metadata(self, data, past_episodes):
+		return [_UtteranceMetadata(past_episodes[x[0]], x[1]) for x in data]
+
+	def _past_episode_index(self, episode, start=0):
+		for i in range(start, len(self._past_episodes)):
+			if self._past_episodes[i] is episode:
+				return i
 
 def _dummy_function(x):
 	"""This is used to feed already processed data to TfidfVectorizer"""
