@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-import logging
-
+from due.util.python import dynamic_import
 
 class Brain(metaclass=ABCMeta):
 	"""
@@ -84,6 +83,12 @@ class Brain(metaclass=ABCMeta):
 		"""
 		Saves the Brain to a serializable object that can be reloaded with
 		:meth:`due.brain.Brain.load`.
+		
+		A saved brain must be a dictionary containing the following items:
+
+		* `version`: version of the class who saved the brain (often `due.__version__`)
+		* `class`: absolute import name of the Brain class (eg. `due.models.vector_similarity.TfIdfCosineBrain`)
+		* `data`: saved brain data. Will be passed to the Brain constructor's `_data` parameter
 
 		:return: a serializable representation of `self`
 		:rtype: `dict`
@@ -93,21 +98,16 @@ class Brain(metaclass=ABCMeta):
 	@staticmethod
 	def load(saved_brain):
 		"""
-		Loads an object represanting a Brain that was produced by
-		:meth:`due.brain.Brain.save`.
+		Loads an object representing a Brain that was produced by
+		:meth:`due.brain.Brain.save`. 
 
 		:param saved_brain: the saved Brain
 		:type saved_brain: `dict`
 		"""
 		class_ = dynamic_import(saved_brain['class'])
-		return class_(data=saved_brain['data'])
+		return class_(_data=saved_brain['data'])
 
 class CosineBrain():
 
 	def __init__(self):
 		raise NotImplementedError("CosineBrain is deprecated. Use VectorSimilarityBrain in due.models.vector_similarity instead.")
-
-# Quick fix for circular dependencies
-from due.episode import Episode
-from due.event import Event
-from due.util.python import dynamic_import

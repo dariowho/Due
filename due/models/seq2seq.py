@@ -143,8 +143,8 @@ class EncoderDecoderBrain(Brain):
 		:type vocabulary_min_count: `int`
 		:param _data: used internally by :meth:`EncoderDecoderBrain.load`
 		:type _data: `dict`
-		:param _data: used internally by :meth:`EncoderDecoderBrain.reset_with_parameters`
-		:type _data: `dict`
+		:param _dataset_data: used internally by :meth:`EncoderDecoderBrain.reset_with_parameters`
+		:type _dataset_data: `dict`
 		"""
 
 		self._logger = logging.getLogger(__name__)
@@ -247,9 +247,9 @@ class EncoderDecoderBrain(Brain):
 			decoder_output, decoder_hidden = self.decoder(decoder_input, batch_size, decoder_hidden)
 			topv, topi = decoder_output.topk(1)
 			decoder_input = topi.squeeze().detach()
-			
+
 			predicted_index = decoder_input.item()
-			
+
 			if predicted_index == self.vocabulary.index(EOS):
 				break
 			result.append(self.vocabulary.word(predicted_index))

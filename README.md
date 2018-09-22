@@ -23,9 +23,12 @@ This will produce a `due-0.0.1.tar.gz` package in the `dist/` folder. You can in
     $ cd dist/
     $ pip install due-0.0.1.tar.gz
 
-Additionally, Spacy's English resources need to be downloaded:
+## Configuration
+For the software to work, Spacy's English resources need to be downloaded:
 
     $ pipenv run python -m spacy download en
+
+Also, *libmagic* must be installed on your system. More info here: https://github.com/ahupp/python-magic
 
 ## Run
 

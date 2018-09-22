@@ -11,11 +11,14 @@ pandas = "*"
 spacy = "*"
 gensim = "*"
 torch = "*"
+due = {editable = true, path = "."}
 
 [dev-packages]
 nose = "*"
 ipython = "*"
 jupyter = "*"
+pylint = "*"
+sphinx = "*"
 
 [requires]
 python_version = "3.6"
