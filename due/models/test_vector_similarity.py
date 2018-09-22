@@ -54,7 +54,7 @@ def _get_train_episodes():
 	]
 	result.append(e)
 
-	e = Episode('a', 'b')
+	e = Episode('1', '2')
 	e.events = [
 		Event(Event.Type.Utterance, datetime.now(), '1', '111'),
 		Event(Event.Type.Utterance, datetime.now(), '2', '222'),

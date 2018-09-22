@@ -20,12 +20,11 @@ from __future__ import unicode_literals, print_function, division
 
 import logging
 import random
-from datetime import datetime
 
 import numpy as np
 
 import torch
-import torch.nn as nn
+from torch import nn
 from torch import optim
 import torch.nn.functional as F
 
@@ -43,7 +42,7 @@ rm = resource_manager
 if is_notebook():
 	from tqdm import tqdm_notebook as tqdm
 else:
-	import tqdm
+	from tqdm import tqdm
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -108,12 +107,18 @@ DEFAULT_PARAMETERS = {
 	'num_rnn_layers': 1,
 	'learning_rate': 0.01,
 	'max_sentence_length': 20,
-	'teacher_forcing_ratio': 1.0
+	'teacher_forcing_ratio': 1.0,
 }
 
 class EncoderDecoderBrain(Brain):
 
-	def __init__(self, model_parameters, initial_episodes, vocabulary_min_count=25, _data=None, _dataset_data=None):
+	def __init__(
+			self,
+			model_parameters=None,
+			initial_episodes=None,
+			vocabulary_min_count=25,
+			random_embedding_init=False,
+			_data=None, _dataset_data=None):
 		"""
 		The `EncoderDecoderBrain` implements the :class:`due.brain.Brain` class
 		with the EncoderDecoder framework described in this module.
@@ -153,7 +158,7 @@ class EncoderDecoderBrain(Brain):
 		elif _dataset_data:
 			self._init_from_dataset(_dataset_data)
 		else:
-			self._init_from_scratch(model_parameters, initial_episodes, vocabulary_min_count)
+			self._init_from_scratch(model_parameters, initial_episodes, vocabulary_min_count, random_embedding_init)
 
 		self.encoder_optimizer = optim.SGD(self.encoder.parameters(), lr=self.parameters['learning_rate'])
 		self.decoder_optimizer = optim.SGD(self.decoder.parameters(), lr=self.parameters['learning_rate'])
@@ -176,7 +181,7 @@ class EncoderDecoderBrain(Brain):
 
 		self._init_model()
 
-	def _init_from_scratch(self, parameters, episodes, vocabulary_min_count):
+	def _init_from_scratch(self, parameters, episodes, vocabulary_min_count, random_embedding_init):
 		self.parameters = {**DEFAULT_PARAMETERS, **parameters}
 
 		self.X = []
@@ -198,7 +203,10 @@ class EncoderDecoderBrain(Brain):
 
 		self._logger.info("Building the embedding matrix")
 		with rm.open_resource_file('embeddings.glove6B', 'glove.6B.300d.txt') as f:
-			self.embedding_matrix = torch.FloatTensor(get_embedding_matrix(self.vocabulary, f, 300), device=DEVICE)
+			self.embedding_matrix = torch.FloatTensor(
+				get_embedding_matrix(self.vocabulary, f, 300, random=random_embedding_init),
+				device=DEVICE
+			)
 
 		self._logger.info("Initializing model")
 		self._init_model()
@@ -263,7 +271,6 @@ class EncoderDecoderBrain(Brain):
 		TODO: allow training on a subset of Episodes
 		TODO: allow for an optional validation set
 		"""
-		tick = datetime.now()
 		i = 1
 		loss_sum = 0.0
 		n_batches = int(np.ceil(len(self.X)/self.parameters['batch_size']))
@@ -277,7 +284,6 @@ class EncoderDecoderBrain(Brain):
 			average_loss = loss_sum/i
 			progress_iterator.set_description("%.4f" % average_loss)
 			i += 1
-		tock = datetime.now()
 
 		self.train_loss_history.append(average_loss)
 		self.epochs += 1
@@ -325,20 +331,19 @@ class EncoderDecoderBrain(Brain):
 
 		return loss.item() / target_length
 
-	@staticmethod
-	def load(data):
-		return EncoderDecoderBrain(None, None, None, _data=data)
-
 	def save(self):
 		return {
-			'_version': due.__version__,
-			'parameters': self.parameters,
-			'dataset': self._save_dataset(),
-			'model': {
-				'encoder': self.encoder.state_dict(),
-				'decoder': self.decoder.state_dict(),
-				'epochs': self.epochs,
-				'train_loss_history': self.train_loss_history
+			'version': due.__version__,
+			'class': 'due.models.seq2seq.EncoderDecoderBrain',
+			'data': {
+				'parameters': self.parameters,
+				'dataset': self._save_dataset(),
+				'model': {
+					'encoder': self.encoder.state_dict(),
+					'decoder': self.decoder.state_dict(),
+					'epochs': self.epochs,
+					'train_loss_history': self.train_loss_history
+				}
 			}
 		}
 
@@ -352,7 +357,7 @@ class EncoderDecoderBrain(Brain):
 			'parameters': {**self.parameters, **new_parameters},
 			'dataset': self._save_dataset()
 		}
-		return EncoderDecoderBrain(None, None, None, _dataset_data=dataset_data)
+		return EncoderDecoderBrain(_dataset_data=dataset_data)
 
 	def _save_dataset(self):
 		return {

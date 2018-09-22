@@ -12,7 +12,7 @@ from due.util.python import is_notebook
 if is_notebook():
 	from tqdm import tqdm_notebook as tqdm
 else:
-	import tqdm
+	from tqdm import tqdm
 
 from due import __version__
 
@@ -124,7 +124,7 @@ def prune_vocabulary(vocabulary, min_occurrences):
 			result.add_word(vocabulary.word(index))
 	return result
 
-def get_embedding_matrix(vocabulary, embeddings_stream, embedding_dim, stub=False):
+def get_embedding_matrix(vocabulary, embeddings_stream, embedding_dim, random=False):
 	"""
 	Return a N x D matrix, where N is the number of words in the vocabulary,
 	and D is the given embeddings' dimensionality. The *i*-th word in the matrix
@@ -137,20 +137,22 @@ def get_embedding_matrix(vocabulary, embeddings_stream, embedding_dim, stub=Fals
 		with rm.open_resource_file('embeddings.glove6B', 'glove.6B.300d.txt') as f:
 		    embedding_matrix = get_embedding_matrix(vocabulary, f, 300)
 
+	The *Start Of String* (:data:`SOS`) token is represented as a vector of **ones**.
+
 	:param vocabulary: a Vocabulary
 	:type vocabulary: :class:`due.nlp.vocabulary.Vocabulary`
 	:param embeddings_stream: stream to a resource containing word embeddings in the word2vec format
 	:type embeddings_stream: *file*
 	:param embedding_dim: dimensionality of the embeddings
 	:type embedding_dim: `int`
-	:param stub: if True, return a random N x D matrix without reading the embedding source
-	:type stub: bool
+	:param random: if True, return a random N x D matrix without reading the embedding source
+	:type random: bool
 	"""
-	if stub:
+	if random:
 		return np.random.rand(vocabulary.size(), embedding_dim)
 
 	unk_index = vocabulary.index(UNK)
-	result = np.zeros((vocabulary.size(), 300))
+	result = np.zeros((vocabulary.size(), embedding_dim))
 	for line in tqdm(embeddings_stream):
 		line_split = line.split()
 		word = line_split[0]
@@ -159,5 +161,5 @@ def get_embedding_matrix(vocabulary, embeddings_stream, embedding_dim, stub=Fals
 			vector = [float(x) for x in line_split[1:]]
 			result[index, :] = vector
 	sos_index = vocabulary.index(SOS)
-	result[sos_index, :] = np.ones(300)
+	result[sos_index, :] = np.ones(embedding_dim)
 	return result

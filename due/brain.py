@@ -83,7 +83,7 @@ class Brain(metaclass=ABCMeta):
 		"""
 		Saves the Brain to a serializable object that can be reloaded with
 		:meth:`due.brain.Brain.load`.
-		
+
 		A saved brain must be a dictionary containing the following items:
 
 		* `version`: version of the class who saved the brain (often `due.__version__`)
@@ -99,7 +99,7 @@ class Brain(metaclass=ABCMeta):
 	def load(saved_brain):
 		"""
 		Loads an object representing a Brain that was produced by
-		:meth:`due.brain.Brain.save`. 
+		:meth:`due.brain.Brain.save`.
 
 		:param saved_brain: the saved Brain
 		:type saved_brain: `dict`
@@ -108,6 +108,11 @@ class Brain(metaclass=ABCMeta):
 		return class_(_data=saved_brain['data'])
 
 class CosineBrain():
+	"""
+	Deprecated: use :class:`due.models.vector_similarity.VectorSimilarityBrain`
+	instead.
+	"""
 
 	def __init__(self):
-		raise NotImplementedError("CosineBrain is deprecated. Use VectorSimilarityBrain in due.models.vector_similarity instead.")
+		raise NotImplementedError("CosineBrain is deprecated. Use " \
+			"VectorSimilarityBrain in due.models.vector_similarity instead.")
