@@ -1,5 +1,5 @@
-Util
-====
+Misc Utilities
+==============
 
 Resources
 ---------

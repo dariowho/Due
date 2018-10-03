@@ -6,3 +6,8 @@ Vector Similarirty
 ------------------
 .. automodule:: due.models.vector_similarity
    :members:
+
+seq2seq
+-------
+.. automodule:: due.models.seq2seq
+   :members:
