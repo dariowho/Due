@@ -1,3 +1,8 @@
+"""
+This module contains utility functions to split datasets in batches. This is
+typically useful in the context of batched Gradient Descent for the optimization
+of Deep Learning models.
+"""
 import numpy as np
 import torch
 
@@ -68,7 +73,7 @@ def batch_to_matrix(batch, vocabulary, max_words=None):
 	will be **padded** with EOS. At least one EOS token is appended to every
 	sentence in the resulting matrix.
 
-	:param batch: a list of sentence
+	:param batch: a list of sentences
 	:type batch: `list` of `str`
 	:param vocabulary: a Vocabulary to look up word indexes
 	:type vocabulary: :class:`due.nlp.vocabulary.Vocabulary`
