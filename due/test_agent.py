@@ -70,7 +70,7 @@ class TestAgent(unittest.TestCase):
 		self.assertTrue(action.done)
 		self.assertEqual(len(e.events), 4)
 		self.assertTrue(e.events[-1].payload is action)
-		
+
 		ha_alice.leave(e)
 
 
@@ -84,11 +84,3 @@ class TestAgent(unittest.TestCase):
 		loaded_alice = HumanAgent.load(deserialize(test_path))
 		self.assertEqual(ha_alice.id, loaded_alice.id)
 		self.assertEqual(ha_alice.name, loaded_alice.name)
-
-	def test_due_agent_load_save(self):
-		due = Due()
-		saved_due = due.save()
-
-		loaded_due = Due.load(saved_due)
-		self.assertEqual(due.id, loaded_due.id)
-		self.assertEqual(due.name, loaded_due.name)

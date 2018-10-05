@@ -13,7 +13,7 @@ def serialize(saved_thing, path, overwrite=True):
 	to a file with the given path.
 
 	:param saved_thing: the saved object
-	:type saved thing: *anything serializable*
+	:type saved_thing: *anything serializable*
 	:param path: path of the output file
 	:type path: `str`
 	:param overwrite: overwrite if existing

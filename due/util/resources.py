@@ -62,13 +62,13 @@ class ResourceManager(object):
 
 		This is an example content for a YAML file specifying one resource to register:
 
-		```
-		resources:
-		  - name: cornell
-		    description: the Cornell Movie-Dialogs Corpus (http://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html)
-		    url: http://www.cs.cornell.edu/~cristian/data/cornell_movie_dialogs_corpus.zip
-		    filename: cornell_movie_dialogs_corpus.zip
-		```
+		.. code-block:: yaml
+
+			resources:
+			- name: cornell
+				description: the Cornell Movie-Dialogs Corpus (http://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html)
+				url: http://www.cs.cornell.edu/~cristian/data/cornell_movie_dialogs_corpus.zip
+				filename: cornell_movie_dialogs_corpus.zip
 
 		:param path: pointer to the YAML file
 		:type path: `file object`

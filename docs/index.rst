@@ -14,14 +14,16 @@ Due is hosted on GitHub (https://github.com/dario-chiappetta/Due) and it's maint
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
+   
    agent
    episode
    event
    action
    brain
    persistence
+   nlp
    util
+   models
 
 Indices and tables
 ==================
