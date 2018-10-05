@@ -18,10 +18,10 @@ If you still want to install it, you can just clone the repo and put it on your 
     running check
     $ python setup.py sdist
 
-This will produce a `due-0.0.1.tar.gz` package in the `dist/` folder. You can install the package as follows:
+This will produce a `due-0.1.dev1.tar.gz` package in the `dist/` folder. You can install the package as follows:
 
     $ cd dist/
-    $ pip install due-0.0.1.tar.gz
+    $ pip install due-0.1.dev1.tar.gz
 
 ## Configuration
 For the software to work, Spacy's English resources need to be downloaded:
