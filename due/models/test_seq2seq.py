@@ -56,6 +56,23 @@ class TestEncoderDecoderBrain(unittest.TestCase):
 		self.assertEqual(brain.decoder.gru.hidden_size, 16)
 		self.assertEqual(brain_new.decoder.gru.hidden_size, 8)
 
+	def test_epoch_predict(self):
+		brain = EncoderDecoderBrain({
+			'batch_size': 2,
+			'hidden_size': 16,
+		}, _get_train_episodes(), random_embedding_init=True)
+		brain.epoch()
+		brain.predict('just an utterance')
+
+	def test_long_utterances(self):
+		brain = EncoderDecoderBrain({
+			'batch_size': 2,
+			'hidden_size': 16,
+			'max_sentence_length': 2
+		}, _get_train_episodes(), random_embedding_init=True)
+		brain.epoch()
+		brain.predict('just an utterance')
+
 def _get_train_episodes():
 	result = []
 

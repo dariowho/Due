@@ -50,17 +50,17 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Model definition
 #
 
-class EncoderRNNBatch(nn.Module):
-	def __init__(self, hidden_size, embedding_matrix, num_rnn_layers=1):
-		super(EncoderRNNBatch, self).__init__()
-		self.hidden_size = hidden_size
+class Encoder(nn.Module):
+	def __init__(self, embedding_matrix, parameters):
+		super(Encoder, self).__init__()
+		self.hidden_size = parameters['hidden_size']
+		self.num_rnn_layers = parameters['num_rnn_layers']
 
 		self.embedding = nn.Embedding.from_pretrained(embedding_matrix, freeze=False)
 		embedding_dim = self.embedding.embedding_dim
 
-		self.gru = nn.GRU(embedding_dim, hidden_size, num_layers=num_rnn_layers)
+		self.gru = nn.GRU(embedding_dim, parameters['hidden_size'], num_layers=self.num_rnn_layers)
 
-		self._num_rnn_layers = num_rnn_layers
 
 	def forward(self, input_data, batch_size, hidden):
 		embedded = self.embedding(input_data).view(1, batch_size, -1)
@@ -69,33 +69,75 @@ class EncoderRNNBatch(nn.Module):
 		return output, hidden
 
 	def init_hidden(self, batch_size):
-		return torch.zeros(self._num_rnn_layers, batch_size, self.hidden_size, device=DEVICE)
+		return torch.zeros(self.num_rnn_layers, batch_size, self.hidden_size, device=DEVICE)
 
-class DecoderRNNBatch(nn.Module):
-	def __init__(self, hidden_size, embedding_matrix, num_rnn_layers=1):
-		super(DecoderRNNBatch, self).__init__()
-		self.hidden_size = hidden_size
+class Decoder(nn.Module):
+	def __init__(self, embedding_matrix, parameters):
+		super(Decoder, self).__init__()
+		self.hidden_size = parameters['hidden_size']
+		self.num_rnn_layers = parameters['num_rnn_layers']
 
 		self.embedding = nn.Embedding.from_pretrained(embedding_matrix, freeze=False)
 		embedding_dim = self.embedding.embedding_dim
 		vocabulary_size = self.embedding.num_embeddings
 
-		self.gru = nn.GRU(embedding_dim, hidden_size, num_layers=num_rnn_layers)
-		self.out = nn.Linear(hidden_size, vocabulary_size)
+		self.gru = nn.GRU(embedding_dim, parameters['hidden_size'], num_layers=self.num_rnn_layers)
+		self.out = nn.Linear(parameters['hidden_size'], vocabulary_size)
 		self.softmax = nn.LogSoftmax(dim=1)
 
-		self._num_rnn_layers = num_rnn_layers
-
-	def forward(self, input_data, batch_size, hidden):
+	def forward(self, input_data, batch_size, hidden, _):
 		output = self.embedding(input_data).view(1, batch_size, -1)
 		output = F.relu(output)
 		output, hidden = self.gru(output, hidden)
 		output = self.out(output[0])
 		output = self.softmax(output)
-		return output, hidden
+		return output, hidden, None
 
 	def init_hidden(self, batch_size):
-		return torch.zeros(self._num_rnn_layers, batch_size, self.hidden_size, device=DEVICE)
+		return torch.zeros(self.num_rnn_layers, batch_size, self.hidden_size, device=DEVICE)
+
+class AttentionDecoder(nn.Module):
+	def __init__(self, embedding_matrix, parameters):
+		super().__init__()
+		self.hidden_size = parameters['hidden_size']
+		self.max_sentence_length = parameters['max_sentence_length']
+		self.num_rnn_layers = parameters['num_rnn_layers']
+
+		self.embedding = nn.Embedding.from_pretrained(embedding_matrix, freeze=False)
+		embedding_dim = self.embedding.embedding_dim
+		vocabulary_size = self.embedding.num_embeddings
+
+		self.dropout = nn.Dropout(parameters['dropout_p'])
+		self.attention = nn.Linear(embedding_dim + self.hidden_size, self.max_sentence_length)
+		self.attention_combine = nn.Linear(embedding_dim + self.hidden_size, embedding_dim)
+
+		# TODO: try using hidden_size as input
+		self.gru = nn.GRU(embedding_dim, self.hidden_size, num_layers=self.num_rnn_layers)
+		self.out = nn.Linear(self.hidden_size, vocabulary_size)
+		self.softmax = nn.LogSoftmax(dim=1)
+
+	def forward(self, input_data, batch_size, hidden, encoder_outputs):
+		input_data = input_data.view(batch_size, -1)
+		embedded = self.embedding(input_data)
+		embedded = self.dropout(embedded)
+
+		hidden_last = hidden[-1]
+		attention_input = torch.cat((embedded[:, 0], hidden_last), dim=1)
+		attention_weights = self.attention(attention_input)
+		attention_weights = F.softmax(attention_weights, dim=1)
+		attention_applied = torch.bmm(attention_weights.reshape(batch_size, 1, self.max_sentence_length), encoder_outputs)
+		output = torch.cat((embedded, attention_applied), dim=2)
+		output = self.attention_combine(output)
+		output = F.relu(output)
+
+		output, hidden = self.gru(output.view(1, batch_size, self.embedding.embedding_dim), hidden)
+		output = self.out(output[0])
+		output = F.log_softmax(output, dim=1)
+
+		return output, hidden, attention_weights
+
+	def init_hidden(self, batch_size):
+		return torch.zeros(self.num_rnn_layers, batch_size, self.hidden_size, device=DEVICE)
 
 #
 # Brain
@@ -105,9 +147,11 @@ DEFAULT_PARAMETERS = {
 	'batch_size': 64,
 	'hidden_size': 512,
 	'num_rnn_layers': 1,
+	'dropout_p': 0.1,
 	'learning_rate': 0.01,
 	'max_sentence_length': 20,
 	'teacher_forcing_ratio': 1.0,
+	'attention_decoder': True,
 }
 
 class EncoderDecoderBrain(Brain):
@@ -126,11 +170,14 @@ class EncoderDecoderBrain(Brain):
 		Currently, the following **model parameters** are accepted:
 
 		* `batch_size`: batch size for training (default 64)
-		* `hidden_dim`: number of hidden cells (default 512)
+		* `hidden_size`: number of hidden cells (default 512)
+		* `num_rnn_layers`: number of recurrent (GRU) layers to stack (default 1)
+		* `dropout_p`: dropout ratio (Attention decoder only)
 		* `learning_rate`: gradient descent's learning rate (default 0.01)
 		* `max_sentence_length`: sentences longer than this will be trimmed
 		  (default 20)
 		* `teacher_forcing_ratio`: currently, this must be 1.0
+		* `attention_decoder`: add an Attention mechanism to the decoder (default: `True`)
 
 		A fresh `EncoderDecoderBrain` must be provided with a set of **initial
 		episodes** to learn. It is especially important to choose carefully the
@@ -212,8 +259,9 @@ class EncoderDecoderBrain(Brain):
 		self._init_model()
 
 	def _init_model(self):
-		self.encoder = EncoderRNNBatch(self.parameters['hidden_size'], self.embedding_matrix, self.parameters['num_rnn_layers']).to(DEVICE)
-		self.decoder = DecoderRNNBatch(self.parameters['hidden_size'], self.embedding_matrix, self.parameters['num_rnn_layers']).to(DEVICE)
+		DecoderClass = AttentionDecoder if self.parameters['attention_decoder'] else Decoder
+		self.encoder = Encoder(self.embedding_matrix, self.parameters).to(DEVICE)
+		self.decoder = DecoderClass(self.embedding_matrix, self.parameters).to(DEVICE)
 		self.epochs = 0
 		self.train_loss_history = []
 
@@ -243,16 +291,22 @@ class EncoderDecoderBrain(Brain):
 		input_tensor = batch_to_tensor([sentence], self.vocabulary, device=DEVICE)
 		input_length = input_tensor.size(0)
 		batch_size = input_tensor.size(1)
+		max_len = self.parameters['max_sentence_length']
+		hidden_size = self.parameters['hidden_size']
 
 		encoder_hidden = self.encoder.init_hidden(batch_size)
+		encoder_outputs = torch.zeros(batch_size, max_len, hidden_size, device=DEVICE)
 		for ei in range(input_length):
-			_, encoder_hidden = self.encoder(input_tensor[ei], batch_size, encoder_hidden)
+			if ei == max_len:
+				break
+			encoder_output, encoder_hidden = self.encoder(input_tensor[ei], batch_size, encoder_hidden)
+			encoder_outputs[:, ei, :] = encoder_output
 
 		decoder_input = torch.tensor([[self.vocabulary.index(SOS)] * batch_size], device=DEVICE)
 		decoder_hidden = encoder_hidden
 
-		for di in range(self.parameters['max_sentence_length']):
-			decoder_output, decoder_hidden = self.decoder(decoder_input, batch_size, decoder_hidden)
+		for di in range(max_len):
+			decoder_output, decoder_hidden, _ = self.decoder(decoder_input, batch_size, decoder_hidden, encoder_outputs)
 			topv, topi = decoder_output.topk(1)
 			decoder_input = topi.squeeze().detach()
 
@@ -292,14 +346,20 @@ class EncoderDecoderBrain(Brain):
 		batch_size = input_tensor.size(1)
 		input_length = input_tensor.size(0)
 		target_length = target_tensor.size(0)
+		max_len = self.parameters['max_sentence_length']
+		hidden_size = self.parameters['hidden_size']
 
 		encoder_hidden = self.encoder.init_hidden(batch_size)
 
 		self.encoder_optimizer.zero_grad()
 		self.decoder_optimizer.zero_grad()
-
+		
+		encoder_outputs = torch.zeros(batch_size, max_len, hidden_size, device=DEVICE)
 		for ei in range(input_length):
+			if ei == max_len:
+				break
 			encoder_output, encoder_hidden = self.encoder(input_tensor[ei], batch_size, encoder_hidden)
+			encoder_outputs[:, ei, :] = encoder_output
 
 		decoder_input = torch.tensor([[self.vocabulary.index(SOS)]*batch_size], device=DEVICE)
 		decoder_hidden = encoder_hidden
@@ -309,7 +369,7 @@ class EncoderDecoderBrain(Brain):
 		loss = 0
 		if use_teacher_forcing:
 			for di in range(target_length):
-				decoder_output, decoder_hidden = self.decoder(decoder_input, batch_size, decoder_hidden)
+				decoder_output, decoder_hidden, _ = self.decoder(decoder_input, batch_size, decoder_hidden, encoder_outputs)
 				loss += self.criterion(decoder_output, target_tensor[di].view(batch_size))
 				decoder_input = target_tensor[di]
 		else:
