@@ -5,6 +5,10 @@ resources:
     description: the Cornell Movie-Dialogs Corpus (http://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html)
     url: http://www.cs.cornell.edu/~cristian/data/cornell_movie_dialogs_corpus.zip
     filename: cornell_movie_dialogs_corpus.zip
+  - name: corpora.tv.friends
+    description: Friends TV show corpus (https://sites.google.com/site/friendstvcorpus/) by David Ayliffe
+    url: https://sites.google.com/site/friendstvcorpus/files/Data.zip?attredirects=0&d=1
+    filename: friends_corpus.zip
   - name: embeddings.glove6B
     description: Global Vectors for Word Representation (https://nlp.stanford.edu/projects/glove/); 6B tokens (Wikipedia 2014 + Gigaword 5)
     url: http://nlp.stanford.edu/data/glove.6B.zip
