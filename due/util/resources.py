@@ -4,10 +4,11 @@ downloaded, cached and retrieved in Due.
 """
 import os
 import logging
-import yaml
 from io import TextIOWrapper
 from zipfile import ZipFile
 from collections import namedtuple
+
+import yaml
 from magic import Magic
 
 DEFAULT_RESOURCE_FOLDER = '~/.due/resources'
@@ -73,7 +74,7 @@ class ResourceManager(object):
 		:param path: pointer to the YAML file
 		:type path: `file object`
 		"""
-		resource_list = yaml.load(yaml_stream)['resources']
+		resource_list = yaml.load(yaml_stream, Loader=yaml.FullLoader)['resources']
 
 		for r in resource_list:
 			self.register_resource(r['name'], r['description'], r['url'], r['filename'])
