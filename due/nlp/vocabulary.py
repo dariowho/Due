@@ -147,6 +147,8 @@ def get_embedding_matrix(vocabulary, embeddings_stream, embedding_dim, random=Fa
 	:type embedding_dim: `int`
 	:param random: if True, return a random N x D matrix without reading the embedding source
 	:type random: bool
+	:return: An embedding matrix for the given vocabulary
+	:rtype: :class:`numpy.array`
 	"""
 	if random:
 		return np.random.rand(vocabulary.size(), embedding_dim)

@@ -1,8 +1,16 @@
-from due.util.python import full_class_name
+"""
+An Episode is a sequence of Events issued by agents. Here we define an interface
+for Episodes, as well as some helper methods to manipulate their content:
 
+    * :class:`Episode` models recorded Episodes that can be used to train agents
+    * :class:`LiveEpisode` models Episodes that are still in progress.
+	* :func:`extract_utterance_pairs` will extract utterances as strings from Episodes.
+
+API
+===
+"""
 import logging
 import uuid
-import copy
 from functools import lru_cache
 
 UTTERANCE_LABEL = 'utterance'
@@ -92,11 +100,11 @@ class LiveEpisode(Episode):
 		:param event: the event that was acted by the Agent
 		:type event: :class:`due.event.Event`
 		"""
-		self._logger.info("New %s event by %s: '%s'" % (event.type.name, agent, event.payload))
+		self._logger.info("New %s event by %s: '%s'", event.type.name, agent, event.payload)
 		self.events.append(event)
 		event.mark_acted()
 		for a in self._other_agents(agent):
-			self._logger.debug("Notifying Agent %s." % a)
+			self._logger.debug("Notifying Agent %s.", a)
 			a.event_callback(event, self)
 
 	def _other_agents(self, agent):

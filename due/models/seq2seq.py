@@ -10,10 +10,13 @@ below is taken from this tutorial by Sean Robertson:
 
 https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html
 
-The model is implemented using the **PyTorch** framework.
+The model is implemented using the **PyTorch** framework. Note that this was
+originally implemented in PyTorch 0.4.1; it should be updated to 1.*: the plan
+is to do it while moving this code to a separate package (see
+https://github.com/dario-chiappetta/Due/issues/30).
 
 [1] Vinyals, O. & Le, Q. V. (2015). A Neural Conversational Model.. CoRR, abs/1506.05869.
-[2] Sutskever, I., Vinyals, O. & Le, Q. V. (2014). Sequence to sequence learning with neural networks. Advances in neural information processing systems (p./pp. 3104--3112), . 
+[2] Sutskever, I., Vinyals, O. & Le, Q. V. (2014). Sequence to sequence learning with neural networks. Advances in neural information processing systems (p./pp. 3104--3112).
 """
 
 from __future__ import unicode_literals, print_function, division
@@ -34,7 +37,7 @@ from due.event import Event
 from due.episode import extract_utterance_pairs
 from due.nlp.vocabulary import Vocabulary, get_embedding_matrix, prune_vocabulary, SOS, EOS
 from due.nlp.preprocessing import normalize_sentence
-from due.nlp.batches import batches, pad_sequence, batch_to_tensor
+from due.nlp.batches import batches, batch_to_tensor
 from due.util.python import is_notebook
 from due import resource_manager
 rm = resource_manager
@@ -238,7 +241,7 @@ class EncoderDecoderBrain(Brain):
 			try:
 				episode_X, episode_y = extract_utterance_pairs(e, preprocess_f=normalize_sentence)
 			except AttributeError:
-				self._logger.warning("Skipping episode with events: %s" % e.events)
+				self._logger.warning("Skipping episode with events: %s", e.events)
 			self.X.extend(episode_X)
 			self.y.extend(episode_y)
 
@@ -250,10 +253,9 @@ class EncoderDecoderBrain(Brain):
 
 		self._logger.info("Building the embedding matrix")
 		with rm.open_resource_file('embeddings.glove6B', 'glove.6B.300d.txt') as f:
-			self.embedding_matrix = torch.FloatTensor(
-				get_embedding_matrix(self.vocabulary, f, 300, random=random_embedding_init),
-				device=DEVICE
-			)
+			self.embedding_matrix = torch.from_numpy(
+				get_embedding_matrix(self.vocabulary, f, 300, random=random_embedding_init)
+			).to(DEVICE)
 
 		self._logger.info("Initializing model")
 		self._init_model()
@@ -276,7 +278,7 @@ class EncoderDecoderBrain(Brain):
 		return [self.predict(last_utterance.payload)]
 
 	def leave_callback(self, episode, agent):
-		self._logger.info(f"Agent {agent} left the episode")
+		self._logger.info("Agent %s left the episode", agent)
 
 	def predict(self, sentence):
 		"""
@@ -305,7 +307,7 @@ class EncoderDecoderBrain(Brain):
 		decoder_input = torch.tensor([[self.vocabulary.index(SOS)] * batch_size], device=DEVICE)
 		decoder_hidden = encoder_hidden
 
-		for di in range(max_len):
+		for _ in range(max_len):
 			decoder_output, decoder_hidden, _ = self.decoder(decoder_input, batch_size, decoder_hidden, encoder_outputs)
 			topv, topi = decoder_output.topk(1)
 			decoder_input = topi.squeeze().detach()
@@ -353,7 +355,7 @@ class EncoderDecoderBrain(Brain):
 
 		self.encoder_optimizer.zero_grad()
 		self.decoder_optimizer.zero_grad()
-		
+
 		encoder_outputs = torch.zeros(batch_size, max_len, hidden_size, device=DEVICE)
 		for ei in range(input_length):
 			if ei == max_len:

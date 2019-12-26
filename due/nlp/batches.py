@@ -109,4 +109,4 @@ def batch_to_tensor(batch, vocabulary, max_words=None, device=None):
 	:rtype: :class:`torch.tensor`
 	"""
 	result_matrix = batch_to_matrix(batch, vocabulary, max_words)
-	return torch.tensor(result_matrix, dtype=torch.long, device=device)
+	return torch.from_numpy(result_matrix, dtype=torch.long).to(device)

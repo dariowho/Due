@@ -3,7 +3,7 @@ from datetime import datetime
 import tempfile
 import os
 
-from numpy.testing import assert_array_equal
+import torch
 
 from due.brain import Brain
 from due.episode import Episode
@@ -29,15 +29,15 @@ class TestEncoderDecoderBrain(unittest.TestCase):
 		self.assertEqual(brain.y, loaded_brain.y)
 		self.assertEqual(brain.vocabulary.save(), loaded_brain.vocabulary.save())
 		self.assertEqual(brain.parameters, loaded_brain.parameters)
-		assert_array_equal(brain.embedding_matrix, loaded_brain.embedding_matrix)
+		assert torch.all(torch.eq(brain.embedding_matrix, loaded_brain.embedding_matrix))
 
 		loaded_encoder_state = loaded_brain.encoder.state_dict()
 		for k, v in brain.encoder.state_dict().items():
-			assert_array_equal(v, loaded_encoder_state[k])
+			assert torch.all(torch.eq(v, loaded_encoder_state[k]))
 
 		loaded_decoder_state = loaded_brain.decoder.state_dict()
 		for k, v in brain.decoder.state_dict().items():
-			assert_array_equal(v, loaded_decoder_state[k])
+			assert torch.all(torch.eq(v, loaded_decoder_state[k]))
 
 	def test_reset_with_parameters(self):
 		brain = EncoderDecoderBrain({
@@ -49,7 +49,7 @@ class TestEncoderDecoderBrain(unittest.TestCase):
 		self.assertEqual(brain.X, brain_new.X)
 		self.assertEqual(brain.y, brain_new.y)
 		self.assertEqual(brain.vocabulary.save(), brain_new.vocabulary.save())
-		assert_array_equal(brain.embedding_matrix, brain_new.embedding_matrix)
+		assert torch.all(torch.eq(brain.embedding_matrix, brain_new.embedding_matrix))
 		self.assertEqual(brain_new.parameters, {**brain_new.parameters, **{'hidden_size': 8}})
 		self.assertEqual(brain.encoder.gru.hidden_size, 16)
 		self.assertEqual(brain_new.encoder.gru.hidden_size, 8)

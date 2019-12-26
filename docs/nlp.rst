@@ -14,5 +14,5 @@ Preprocessing
 
 Vocabulary
 ----------
-.. automodule:: due.nlp.batches
+.. automodule:: due.nlp.vocabulary
    :members:
