@@ -22,8 +22,8 @@ spacy = "^2.2"
 gensim = "^3.8"
 python-dateutil = "^2.8"
 torch = "^1.3"
-pyasn1 = "^0.4.8"
-pyasn1_modules = "^0.2.7"
+pyasn1 = "=0.3.7"
+pyasn1_modules = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.3"
