@@ -130,9 +130,86 @@ class TestEpisode(unittest.TestCase):
 		self.assertEqual(loaded_e.starter_id, 'Alice') 
 		self.assertEqual(loaded_e.invited_id, 'Bob')
 		self.assertEqual(len(loaded_e.events), 3)
-		self.assertEqual(loaded_e.events[0], utterance1) 
-		self.assertEqual(loaded_e.events[1], action1) 
-		self.assertEqual(loaded_e.events[2], leave1) 
+		self.assertEqual(loaded_e.events[0], utterance1)
+		self.assertEqual(loaded_e.events[1], action1)
+		self.assertEqual(loaded_e.events[2], leave1)
+
+	def test_episode_save_load_compact(self):
+		alice = HumanAgent(name="Alice")
+		bob = HumanAgent(name="Bob")
+		episode = alice.start_episode(bob)
+		alice.say("Hi!", episode)
+		bob.say("Hi!", episode)
+		a = RecordedAction()
+		episode.events.append(Event(Event.Type.Action, datetime.now(), 'fake-agent-id', a))
+		episode.events.append(Event(Event.Type.Leave, datetime.now(), 'fale-agent-id', None))
+
+		saved_episode = episode.save()
+		saved_episode_compact = episode.save(output_format='compact')
+
+		assert Episode.load(saved_episode) == episode
+		assert Episode.load(saved_episode) == Episode.load(saved_episode_compact)
+
+	def test_equals_true(self):
+		e1 = Episode('a', 'b')
+		e1.events = [
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'a', 'aaa'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'b', 'bbb'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'a', 'ccc'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'b', 'ddd')
+		]
+
+		e2 = Episode('a', 'b')
+		e2.id = e1.id
+		e2.timestamp = e1.timestamp
+		e2.events = [
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'a', 'aaa'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'b', 'bbb'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'a', 'ccc'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'b', 'ddd')
+		]
+
+		assert e1 == e2
+
+	def test_equals_timestamp(self):
+		e1 = Episode('a', 'b')
+		e1.events = [
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'a', 'aaa'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'b', 'bbb'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'a', 'ccc'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'b', 'ddd')
+		]
+
+		e2 = Episode('a', 'b')
+		e2.id = e1.id
+		e2.timestamp = datetime.now()
+		e2.events = [
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'a', 'aaa'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'b', 'bbb'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'a', 'ccc'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'b', 'ddd')
+		]
+
+	def test_equals_events(self):
+		e1 = Episode('a', 'b')
+		e1.events = [
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'a', 'aaa'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'b', 'bbb'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'a', 'ccc'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'b', 'ddd')
+		]
+
+		e2 = Episode('a', 'b')
+		e2.id = e1.id
+		e2.timestamp = e1.timestamp
+		e2.events = [
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'a', 'AAA'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'b', 'bbb'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'a', 'ccc'),
+			Event(Event.Type.Utterance, datetime(2019, 12, 28), 'b', 'ddd')
+		]
+
+		assert e1 != e2
 
 class TestExtractUtterances(unittest.TestCase):
 

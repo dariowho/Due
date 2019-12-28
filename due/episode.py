@@ -2,8 +2,8 @@
 An Episode is a sequence of Events issued by agents. Here we define an interface
 for Episodes, as well as some helper methods to manipulate their content:
 
-    * :class:`Episode` models recorded Episodes that can be used to train agents
-    * :class:`LiveEpisode` models Episodes that are still in progress.
+	* :class:`Episode` models recorded Episodes that can be used to train agents
+	* :class:`LiveEpisode` models Episodes that are still in progress.
 	* :func:`extract_utterance_pairs` will extract utterances as strings from Episodes.
 
 API
@@ -11,7 +11,15 @@ API
 """
 import logging
 import uuid
+import io
+import json
 from functools import lru_cache
+from datetime import datetime
+
+import numpy as np
+import pandas as pd
+
+from due.util.time import convert_datetime, parse_timedelta
 
 UTTERANCE_LABEL = 'utterance'
 
@@ -24,8 +32,23 @@ class Episode(object):
 		self._logger = logging.getLogger(__name__ + ".Episode")
 		self.starter_id = starter_agent_id
 		self.invited_id = invited_agent_id
-		self.id = uuid.uuid1()
+		self.id = str(uuid.uuid1())
+		self.timestamp = datetime.now()
 		self.events = []
+
+	def __eq__(self, other):
+		if isinstance(other, Episode):
+			if self.starter_id != other.starter_id: return False
+			if self.invited_id != other.invited_id: return False
+			if self.id != other.id: return False
+			if self.timestamp != other.timestamp: return False
+			if self.events != other.events: return False
+			return True
+
+		return False
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
 
 	def last_event(self, event_type=None):
 		"""
@@ -46,20 +69,36 @@ class Episode(object):
 				return e
 		return None
 
-	def save(self):
+	def save(self, output_format='standard'):
 		"""
 		Save the Episode to a serializable object, that can be loaded with
 		:meth:`due.episode.Episode.load`.
 
-		:return: a serializable representation of `self`
-		:rtype: `dict`
+		By default, episodes are saved in the **standard** format, which is a
+		dict of metadata with a list of saved Events, which format is handled by
+		the :class:`due.event.Event` class).
+
+		It is also possible to save the Episode in the **compact** format. In
+		compact representation, event objects are squashed into CSV lines. This
+		makes them slower to load and save, but more readable and easily
+		editable without the use of external tools; because of this, they are
+		especially suited for toy examples and small hand-crafted corpora.
+
+		:return: a serializable representation of `self` :rtype: `dict`
 		"""
-		return {
+		result = {
 			'id': self.id,
+			'timestamp': self.timestamp,
 			'starter_agent': str(self.starter_id),
 			'invited_agents': [str(self.invited_id)],
-			'events': [e.save() for e in self.events]
+			'events': [e.save() for e in self.events],
+			'format': 'standard'
 		}
+
+		if output_format == 'compact':
+			return _compact_saved_episode(result)
+
+		return result
 
 	@staticmethod
 	def load(saved_episode):
@@ -71,8 +110,12 @@ class Episode(object):
 		:return: an Episode object representing `saved_episode`
 		:rtype: :class:`due.episode.Episode`
 		"""
+		if saved_episode['format'] == 'compact':
+			saved_episode = _uncompact_saved_episode(saved_episode)
+
 		result = Episode(saved_episode['starter_agent'], saved_episode['invited_agents'][0])
 		result.id = saved_episode['id']
+		result.timestamp = convert_datetime(saved_episode['timestamp'])
 		result.events = [Event.load(e) for e in saved_episode['events']]
 		return result
 
@@ -109,6 +152,79 @@ class LiveEpisode(Episode):
 
 	def _other_agents(self, agent):
 		return [self.starter] if agent == self.invited else [self.invited]
+
+#
+# Save/Load Helpers
+#
+
+def _compact_saved_episode(saved_episode):
+	"""
+	Convert a saved episode into a compact representation.
+	"""
+	events = saved_episode['events']
+	events = [_compact_saved_event(e) for e in events]
+	df = pd.DataFrame(events)
+	s = io.StringIO()
+	df.to_csv(s, sep='|', header=False, index=False)
+	compact_events = [l for l in s.getvalue().split('\n') if l]
+	return {**saved_episode, 'events': compact_events, 'format': 'compact'}
+
+def _compact_saved_event(saved_event):
+	"""
+	Prepare an Event for compact serialization, meaning that its fields must
+	be writable as a line of CSV). This is always the case, except for Actions,
+	which payloads are objects. In this case, we serialize them as JSON.
+	"""
+	e = saved_event
+	if e['type'] == Event.Type.Action.value:
+		return {**e, 'payload': json.dumps(e['payload'])}
+	return e
+
+def _uncompact_saved_episode(compact_episode):
+	"""
+	Convert a compacted saved episode back to the standard format.
+	"""
+	buf = io.StringIO('\n'.join(compact_episode['events']))
+	df = pd.read_csv(buf, sep='|', names=['type', 'timestamp', 'agent', 'payload'])
+	compact_events = df.replace({np.nan:None}).to_dict(orient='records')
+	events = []
+	last_timestamp = convert_datetime(compact_episode['timestamp'])
+	for e in compact_events:
+		e_new = _uncompact_saved_event(e, last_timestamp)
+		events.append(e_new)
+		last_timestamp = e_new['timestamp']
+	return {**compact_episode, 'events': events, 'format': 'standard'}
+
+def _uncompact_saved_event(compact_event, last_timestamp):
+	"""
+	Note that `compact_event` is not the CSV line. It is already its dict
+	representation, but Action payloads need to be deserialized from JSON.
+	Also, the Pandas interpretation of CSV needs to be fixed, by converting
+	timestamps to `datetime`, and converting NaN values to `None`.
+	"""
+	e = compact_event
+	timestamp = _uncompact_timestamp(compact_event, last_timestamp)
+	e = {**e, 'timestamp': timestamp}
+	if compact_event['type'] == Event.Type.Action.value:
+		e['payload'] = json.loads(e['payload'])
+	return e
+
+
+def _uncompact_timestamp(compact_event, last_timestamp):
+	"""
+	In compacted episodes the timestamp can be a ISO string, or as a time
+	difference from the previous event; in this latter case, the delta must be
+	expressed as a int (number of seconds) or in the `1d2h3m4s` format (see
+	:func:`due.util.time.parse_timedelta`).
+	"""
+	try:
+		return convert_datetime(compact_event['timestamp'])
+	except ValueError:
+		return last_timestamp + parse_timedelta(compact_event['timestamp'])
+
+#
+# Utilities
+#
 
 def _is_utterance(event):
 	return event.type == Event.Type.Utterance

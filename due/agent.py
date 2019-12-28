@@ -31,7 +31,7 @@ class Agent(metaclass=ABCMeta):
 	"""
 
 	def __init__(self, agent_id=None, name=None):
-		self.id = agent_id if agent_id is not None else uuid.uuid1()
+		self.id = agent_id if agent_id is not None else str(uuid.uuid1())
 		self.name = name
 
 	@abstractmethod
@@ -204,8 +204,8 @@ class Agent(metaclass=ABCMeta):
 class HumanAgent(Agent):
 	"""
 	A Human Agent is an Agent that uses a Human brain, typically sitting behind
-	a keyboard, to make sense of :class:`Episode`\ s and produce new
-	:class:`.Event`\ s.
+	a keyboard, to make sense of :class:`Episode` s and produce new
+	:class:`.Event` s.
 
 	This is the simplest kind of Agent, as it simply logs new Episodes and
 	Events, expecting the interaction to be commanded externally.
