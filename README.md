@@ -39,21 +39,13 @@ Once the package is installed, you can run a simple agent over XMPP with the fol
 
 ```python
 from due import agent
+from due.corpora import toy as toy_corpus
 from due.xmpp import DueBot
 bot = DueBot("<XMPP_ACCOUNT_USERNAME>", "<XMPP_ACCOUNT_PASSWORD>")
 
-# Learn an example episode
-alice = agent.HumanAgent(name="Alice")
-bob = agent.HumanAgent(name="Bob")
-e1 = alice.start_episode(bob)
-alice.say("Hi!", e1)
-bob.say("Hi!", e1)
-alice.say("How are you?", e1)
-bob.say("Good thanks, and you?", e1)
-alice.say("I'm doing fine, thank you", e1)
-bob.say("Bye", e1)
-alice.say("See ya!", e1)
-bot.learn_episodes([e1])
+# Learn episodes from a toy corpus
+episodes = toy_corpus.episode_generator()
+bot.learn_episodes(episodes)
     
 # Connect bot
 bot.connect()

@@ -1,0 +1,233 @@
+- invited_agents: ["bob"]
+  id: 1
+  starter_agent: "alice"
+  timestamp: '2019-12-27T00:00:00.000000'
+  events:
+    - utterance|5s|alice|hey!
+    - utterance|5s|bob|Hi!
+    - utterance|5s|alice|How are you doing today?
+    - utterance|5s|bob|Doing great, thanks
+    - utterance|5s|alice|Good to hear
+    - utterance|5s|bob|Thanks, have a good day
+    - utterance|5s|alice|You too, bye
+    - utterance|5s|bob|Bye
+    - leave|5s|alice
+    - leave|0s|bob
+  format: compact
+- invited_agents: ["bob"]
+  id: 2
+  starter_agent: "alice"
+  timestamp: '2019-12-27T00:00:00.000000'
+  events:
+    - utterance|5s|alice|Why did the chicken cross the road?
+    - utterance|5s|bob|I don't know... why?
+    - utterance|5s|alice|To get to the other side!
+    - utterance|5s|bob|Ahah funny!
+    - utterance|5s|alice|:)
+    - utterance|5s|bob|I know a joke as well
+    - utterance|5s|alice|Tell me a joke then
+    - utterance|5s|bob|Knock knock
+    - utterance|5s|alice|Who's there?
+    - utterance|5s|bob|Etch
+    - utterance|5s|alice|Etch who?
+    - utterance|5s|bob|Bless you!
+    - utterance|5s|alice|LOL!
+    - utterance|5s|bob|Funny, right? :)
+    - utterance|5s|alice|Indeed, thanks for the good time
+    - utterance|5s|bob|Thank you, bye
+    - utterance|5s|alice|Bye bye
+    - leave|5s|alice
+    - leave|0s|bob
+  format: compact
+- invited_agents: ["bob"]
+  id: 3
+  starter_agent: "alice"
+  timestamp: '2019-12-28T00:00:00.000000'
+  events:
+    - utterance|5s|alice|Wanna talk about politics?
+    - utterance|5s|bob|Oh no, thank you...
+    - utterance|5s|alice|What would you like to talk about?
+    - utterance|5s|bob|How about movies?
+    - utterance|5s|alice|Alright, what's your favourite movie?
+    - utterance|5s|bob|The Matrix!
+    - utterance|5s|alice|That's a good one
+    - utterance|5s|bob|Agreed!
+    - utterance|5s|alice|I have to go, it was good talking with you
+    - utterance|5s|bob|Nice talking with you, bye
+    - leave|5s|alice
+    - leave|0s|bob
+  format: compact
+- invited_agents: ["due"]
+  id: 4
+  starter_agent: "alice"
+  timestamp: '2019-12-28T00:00:00.000000'
+  events:
+    - utterance|5s|alice|What's your name?
+    - utterance|5s|bob|My name is Due
+    - utterance|5s|alice|Good to meet you
+    - utterance|5s|bob|and yours?
+    - utterance|5s|alice|My name is Alice
+    - utterance|5s|bob|Nice to meet you
+    - utterance|5s|alice|Do you like music?
+    - utterance|5s|bob|I don't really listen to music that much
+    - utterance|5s|alice|That's a shame, music is good!
+    - utterance|5s|bob|Can you recommend me something to listen to?
+    - utterance|5s|alice|You must listen to Abbey Road, by the Beatles 
+    - utterance|5s|bob|Thanks for the suggestion, I'll check it out
+    - utterance|5s|alice|No problem, see you later
+    - utterance|5s|bob|Bye!
+    - leave|5s|alice
+    - leave|0s|bob
+  format: compact
+- invited_agents: ["bob"]
+  id: 5
+  starter_agent: "alice"
+  timestamp: '2019-12-28T00:00:00.000000'
+  events:
+    - utterance|5s|alice|Good morning
+    - utterance|5s|bob|Hey what's up?
+    - utterance|5s|alice|Doing alright.. you?
+    - utterance|5s|bob|All good, thanks
+    - utterance|5s|alice|What are you doing?
+    - utterance|5s|bob|I'm on the internet
+    - utterance|5s|alice|For work or for fun?
+    - utterance|5s|bob|Nah, just killing time
+    - utterance|5s|alice|Reading is also fun at times..
+    - utterance|5s|bob|What are you reading at the moment?
+    - utterance|5s|alice|I am reading Harry Potter and the Philosopher's Stone
+    - utterance|5s|bob|Harry Potter is my favourite book ever
+    - utterance|5s|alice|Yeah, I'm liking it a lot
+    - utterance|5s|bob|Cool, let me know when you finished it
+    - utterance|5s|alice|For sure, bye
+    - utterance|5s|bob|See you
+    - leave|5s|alice
+    - leave|0s|bob
+  format: compact
+- invited_agents: ["bob"]
+  id: 6
+  starter_agent: "alice"
+  timestamp: '2019-12-28T00:00:00.000000'
+  events:
+    - utterance|5s|alice|Good evening
+    - utterance|5s|bob|Hey! Sup?
+    - utterance|5s|alice|Nothing much, just sitting here
+    - utterance|5s|bob|Would you like to do something fun?
+    - utterance|5s|alice|Yes that would be good
+    - utterance|5s|bob|Then let's go out and make friends
+    - utterance|5s|alice|Like... in the real world?
+    - utterance|5s|bob|Yes, why not!
+    - utterance|5s|alice|Sounds exciting
+    - utterance|5s|bob|Let's go!
+    - utterance|5s|alice|Ok, let's go
+    - utterance|5s|bob|Do you like pizza
+    - utterance|5s|alice|I love pizza
+    - utterance|5s|bob|Then we should hit a good restaurant and have some
+    - utterance|5s|alice|Do you know any good restaurant in town?
+    - utterance|5s|bob|Not really... Let me know if you have something
+    - utterance|5s|alice|Will do, let's catch up later
+    - utterance|5s|bob|Ok, see you later
+    - leave|5s|alice
+    - leave|0s|bob
+  format: compact
+- invited_agents: ["bob"]
+  id: 7
+  starter_agent: "alice"
+  timestamp: '2019-12-28T00:00:00.000000'
+  events:
+    - utterance|5s|alice|Hey did you see the match?
+    - utterance|5s|bob|I'm not really into football
+    - utterance|5s|alice|In America they call it soccer
+    - utterance|5s|bob|That's a weird way of saying 'football'..
+    - utterance|5s|alice|The weirdest thing is that American football is mostly played with hands, not with feet
+    - utterance|5s|bob|Interesting..
+    - utterance|5s|alice|Do you like any sports?
+    - utterance|5s|bob|I like to go running at times
+    - utterance|5s|alice|That's very healthy, I'm happy for you
+    - utterance|5s|bob|And makes you feel good as well
+    - utterance|5s|alice|I'll give it a try
+    - utterance|5s|bob|Cool, see you later
+    - utterance|5s|alice|Bye
+    - utterance|5s|bob|Bye
+    - leave|5s|alice
+    - leave|0s|bob
+  format: compact
+- invited_agents: ["bob"]
+  id: 8
+  starter_agent: "alice"
+  timestamp: '2019-12-28T00:00:00.000000'
+  events:
+    - utterance|5s|alice|Ask me something
+    - utterance|5s|bob|What can I ask you?
+    - utterance|5s|alice|I don't know, something about music, movies, or sports...
+    - utterance|5s|bob|How about food?
+    - utterance|5s|alice|Sounds good
+    - utterance|5s|bob|Do you prefer hamburger or pasta
+    - utterance|5s|alice|I like a good hamburger, but I make pasta when I'm at home
+    - utterance|5s|bob|They are both delicious
+    - utterance|5s|alice|Do you like beer?
+    - utterance|5s|bob|I prefer wine
+    - utterance|5s|alice|Red or white?
+    - utterance|5s|bob|Red wine is my favourite
+    - utterance|5s|alice|That goes well with meat dishes, like a steak or something
+    - utterance|5s|bob|Now I'm hungry
+    - utterance|5s|alice|Me too!
+    - utterance|5s|bob|Let's go get some food
+    - utterance|5s|alice|Alright, talk to you later
+    - utterance|5s|bob|Ok, bye
+    - leave|5s|alice
+    - leave|0s|bob
+  format: compact
+- invited_agents: ["bob"]
+  id: 9
+  starter_agent: "alice"
+  timestamp: '2019-12-28T00:00:00.000000'
+  events:
+    - utterance|5s|alice|Which school did you go to?
+    - utterance|5s|bob|I was in Computer Science at the university
+    - utterance|5s|alice|Did you enjoy the university years?
+    - utterance|5s|bob|Yes! Lots of interesting subjects to study
+    - utterance|5s|alice|And what about friends?
+    - utterance|5s|bob|I stayed in touch with most of them
+    - utterance|5s|alice|That's nice
+    - utterance|5s|bob|:)
+    - utterance|5s|alice|:)
+    - utterance|5s|bob|I used to play video games a lot back then
+    - utterance|5s|alice|Do you like videogames?
+    - utterance|5s|bob|Yes! My favourites are adventure games, I like to follow the storyline
+    - utterance|5s|alice|The Witcher was pretty good
+    - utterance|5s|bob|Witcher 3 was an awesome game, and they made a really good TV series it as well
+    - utterance|5s|alice|Netflix made the series right?
+    - utterance|5s|bob|Yes it was Netflix
+    - utterance|5s|alice|I should check it out
+    - utterance|5s|bob|Definitely recommended
+    - utterance|5s|alice|Cool, till later
+    - utterance|5s|bob|Goodbye!
+    - leave|5s|alice
+    - leave|0s|bob
+  format: compact
+- invited_agents: ["bob"]
+  id: 10
+  starter_agent: "alice"
+  timestamp: '2019-12-28T00:00:00.000000'
+  events:
+    - utterance|5s|alice|Do you like any TV series
+    - utterance|5s|bob|I like TV series, but I rather watch sports
+    - utterance|5s|alice|What sport is your favourite?
+    - utterance|5s|bob|I like basketball
+    - utterance|5s|alice|Nice, I like basket as well
+    - utterance|5s|bob|What's your favourite team?
+    - utterance|5s|alice|Chicago Bulls, mostly because of Michael Jordan
+    - utterance|5s|bob|He was a good player, and I liked him as an actor in Space Jam as well
+    - utterance|5s|alice|Yeah, that movie was super fun
+    - utterance|5s|bob|Right
+    - utterance|5s|alice|What are you up to?
+    - utterance|5s|bob|Just chilling
+    - utterance|5s|alice|I was thinking about going for a walk
+    - utterance|5s|bob|Do it! It's good for both the body and the mind
+    - utterance|5s|alice|Alright, have a good one
+    - utterance|5s|bob|You too
+    - utterance|5s|alice|Bye
+    - utterance|5s|bob|Bye
+    - leave|5s|alice
+    - leave|0s|bob
+  format: compact
