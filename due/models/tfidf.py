@@ -1,9 +1,6 @@
 """
-Baseline sentence matching models based on vector similarity. Currently,
-:class:`TfIdfCosineBrain` is the only implemented model.
+Baseline sentence matching model based on If-Idf vector similarity.
 """
-
-
 import logging
 from datetime import datetime
 from collections import namedtuple
@@ -14,7 +11,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 
 import due
-from due.brain import Brain
+from due.agent import Agent
 from due.event import Event
 from due.episode import Episode, extract_utterances
 from due.nlp.preprocessing import normalize_sentence
@@ -25,10 +22,10 @@ DEFAULT_PARAMETERS = {
 
 _UtteranceMetadata = namedtuple('_UtteranceMetadata', ['episode', 'index'])
 
-class TfIdfCosineBrain(Brain):
+class TfIdfAgent(Agent):
 	"""
-	This is a baseline brain that just matches the incoming utterance with
-	the ones it has already seen in episodes, and return the one coming
+	This is a baseline :class:`Agent` that just matches the incoming utterance
+	with the ones it has already seen in episodes, and return the one coming
 	right after the closest one as an answer.
 
 	Utterance similarity is modeled as the plain **cosine distance** of the
@@ -40,13 +37,13 @@ class TfIdfCosineBrain(Brain):
 
 	:param parameters: A dictionary of parameters.
 	:param parameters: `dict`
-	:param _data: This is used by :meth:`due.brain.Brain.load`
+	:param _data: This is used by :meth:`due.agent.Agent.load`
 	:param _data: `dict`
 	"""
 
 	def __init__(self, parameters=None, _data=None):
 		parameters = parameters if parameters else {}
-		self._logger = logging.getLogger(__name__ + ".VectorSimilarityBrain")
+		self._logger = logging.getLogger(__name__ + ".TfIdfAgent")
 		super().__init__()
 		self.parameters = {**DEFAULT_PARAMETERS, **parameters} if not _data else {**_data['parameters'], **parameters}
 		self._active_episodes = {}
@@ -66,7 +63,7 @@ class TfIdfCosineBrain(Brain):
 				self._vectorized_past_utterances = self._vectorizer.fit_transform(self._normalized_past_utterances)
 
 	def learn_episodes(self, episodes):
-		"""See :meth:`due.brain.Brain.learn_episodes`"""
+		"""See :meth:`due.agent.Agent.learn_episodes`"""
 		for e in tqdm(episodes):
 			self._past_episodes.append(e)
 			for i, u in enumerate(extract_utterances(e)):
@@ -83,13 +80,16 @@ class TfIdfCosineBrain(Brain):
 			lemmatize=self.parameters['lemmatize_tokens']
 		)
 
+	def action_callback(self, action):
+		"""See :meth:`due.agent.Agent.action_callback`"""
+		self._logger.debug("Received action: %s", action)
+
 	def utterance_callback(self, episode):
-		"""See :meth:`due.brain.Brain.utterance_callback`"""
+		"""See :meth:`due.agent.Agent.utterance_callback`"""
 		last_utterance = episode.last_event(Event.Type.Utterance)
 		predicted_answer = self._predict(last_utterance.payload)
-		# TODO: add Agent ID to returned Event
 		if predicted_answer:
-			return [Event(Event.Type.Utterance, datetime.now(), None, predicted_answer)]
+			return [Event(Event.Type.Utterance, datetime.now(), self.id, predicted_answer)]
 		return []
 
 
@@ -105,19 +105,18 @@ class TfIdfCosineBrain(Brain):
 			return None
 
 	def new_episode_callback(self, episode):
-		"""See :meth:`due.brain.Brain.new_episode_callback`"""
+		"""See :meth:`due.agent.Agent.new_episode_callback`"""
 		self._logger.debug("New episode callback received: %s", episode)
 
-	def leave_callback(self, episode, agent):
-		"""See :meth:`due.brain.Brain.leave_callback`"""
-		# TODO: separate from gold standard episodes
+	def leave_callback(self, episode):
+		"""See :meth:`due.agent.Agent.leave_callback`"""
 		self.learn_episode(episode)
 
 	def save(self):
-		"""See :meth:`due.brain.Brain.save`"""
+		"""See :meth:`due.agent.Agent.save`"""
 		return {
 			'version': due.__version__,
-			'class': 'due.models.vector_similarity.TfIdfCosineBrain',
+			'class': 'due.models.tfidf.TfIdfAgent',
 			'data': {
 				'parameters': self.parameters,
 				'past_episodes': [e.save() for e in self._past_episodes],

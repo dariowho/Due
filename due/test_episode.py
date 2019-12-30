@@ -3,17 +3,17 @@ import tempfile
 import os
 
 from due.persistence import serialize, deserialize
-from due.agent import HumanAgent
+from due.models.dummy import DummyAgent
 from due.event import Event
 from due.action import RecordedAction
 from due.episode import *
 
 from datetime import datetime
 
-class RecordCallbackAgent(HumanAgent):
+class RecordCallbackAgent(DummyAgent):
 
-	def __init__(self, id=None, name=None):
-		super().__init__(id, name)
+	def __init__(self, id=None):
+		super().__init__(id)
 		self.recorded_utterances = 0
 		self.recorded_actions = 0
 		self.recorded_leave = 0
@@ -28,7 +28,7 @@ class RecordCallbackAgent(HumanAgent):
 class TestEpisode(unittest.TestCase):
 
 	def test_add_event(self):
-		alice = HumanAgent('Alice')
+		alice = DummyAgent('Alice')
 		bob = RecordCallbackAgent('Bob')
 		episode = alice.start_episode(bob)
 		self.assertEqual(bob.recorded_utterances, 0)
@@ -79,8 +79,8 @@ class TestEpisode(unittest.TestCase):
 		self.assertEqual(bob.recorded_leave, 1)
 
 	def test_last_event(self):
-		alice = HumanAgent('Alice')
-		bob = HumanAgent('Bob')
+		alice = DummyAgent('Alice')
+		bob = DummyAgent('Bob')
 		episode = alice.start_episode(bob)
 
 		utterance1 = Event(Event.Type.Utterance, datetime.now(), alice.id, 'First utterance')
@@ -96,8 +96,8 @@ class TestEpisode(unittest.TestCase):
 		self.assertEqual(episode.last_event(Event.Type.Action), action1)
 
 	def test_empty_episode_save_load(self):
-		alice = HumanAgent('Alice')
-		bob = HumanAgent('Bob')
+		alice = DummyAgent('Alice')
+		bob = DummyAgent('Bob')
 
 		episode = alice.start_episode(bob)
 		test_dir = tempfile.mkdtemp()
@@ -111,8 +111,8 @@ class TestEpisode(unittest.TestCase):
 		self.assertEqual(len(loaded_e.events), 0)
 
 	def test_episode_save_load(self):
-		alice = HumanAgent('Alice')
-		bob = HumanAgent('Bob')
+		alice = DummyAgent('Alice')
+		bob = DummyAgent('Bob')
 		episode = alice.start_episode(bob)
 
 		utterance1 = Event(Event.Type.Utterance, datetime.now(), alice.id, 'First utterance')
@@ -135,8 +135,8 @@ class TestEpisode(unittest.TestCase):
 		self.assertEqual(loaded_e.events[2], leave1)
 
 	def test_episode_save_load_compact(self):
-		alice = HumanAgent(name="Alice")
-		bob = HumanAgent(name="Bob")
+		alice = DummyAgent("Alice")
+		bob = DummyAgent("Bob")
 		episode = alice.start_episode(bob)
 		alice.say("Hi!", episode)
 		bob.say("Hi!", episode)

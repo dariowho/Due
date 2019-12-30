@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "due"
-version = "0.1.dev2"
+version = "0.1.dev3"
 description = "An episodic, multi-model, servable framework for Dialog Systems"
-authors = ["Dario Chiappetta <<dario.chi@inventati.org>"]
+authors = ["Dario Chiappetta <dario.chi@inventati.org>"]
 license = "GPL-3.0"
 
 [tool.poetry.dependencies]

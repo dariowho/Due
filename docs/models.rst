@@ -1,10 +1,15 @@
-Brain models
+Agent models
 ============
 Due comes with a collection of models that are ready to use on any corpus of Episodes. 
 
-Vector Similarirty
-------------------
-.. automodule:: due.models.vector_similarity
+Dummy
+-----
+.. automodule:: due.models.dummy
+   :members:
+
+Tf-Idf
+------
+.. automodule:: due.models.tfidf
    :members:
 
 seq2seq

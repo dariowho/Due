@@ -4,74 +4,77 @@ import tempfile
 import os
 
 import torch
+import pytest
 
-from due.brain import Brain
+from due.agent import Agent
 from due.episode import Episode
 from due.event import Event
 from due.persistence import serialize, deserialize
-from due.models.seq2seq import EncoderDecoderBrain
+from due.models.seq2seq import EncoderDecoderAgent
 
-class TestEncoderDecoderBrain(unittest.TestCase):
+pytest.skip("skipping Pytorch tests: that code will be moved", allow_module_level=True)
+
+class TestEncoderDecoderAgent(unittest.TestCase):
 
 	def test_save_load(self):
-		brain = EncoderDecoderBrain({
+		agent = EncoderDecoderAgent({
 			'batch_size': 1,
 			'hidden_size': 16,
 		}, _get_train_episodes(), random_embedding_init=True)
-		saved_brain = brain.save()
+		saved_agent = agent.save()
 
 		with tempfile.TemporaryDirectory() as temp_dir:
-			path = os.path.join(temp_dir, 'serialized_encdec_brain.due')
-			serialize(saved_brain, path)
-			loaded_brain = Brain.load(deserialize(path))
+			path = os.path.join(temp_dir, 'serialized_encdec_agent.due')
+			serialize(saved_agent, path)
+			loaded_agent = Agent.load(deserialize(path))
 
-		self.assertEqual(brain.X, loaded_brain.X)
-		self.assertEqual(brain.y, loaded_brain.y)
-		self.assertEqual(brain.vocabulary.save(), loaded_brain.vocabulary.save())
-		self.assertEqual(brain.parameters, loaded_brain.parameters)
-		assert torch.all(torch.eq(brain.embedding_matrix, loaded_brain.embedding_matrix))
+		self.assertEqual(agent.X, loaded_agent.X)
+		self.assertEqual(agent.y, loaded_agent.y)
+		self.assertEqual(agent.vocabulary.save(), loaded_agent.vocabulary.save())
+		self.assertEqual(agent.parameters, loaded_agent.parameters)
+		assert torch.all(torch.eq(agent.embedding_matrix, loaded_agent.embedding_matrix))
 
-		loaded_encoder_state = loaded_brain.encoder.state_dict()
-		for k, v in brain.encoder.state_dict().items():
+		loaded_encoder_state = loaded_agent.encoder.state_dict()
+		for k, v in agent.encoder.state_dict().items():
 			assert torch.all(torch.eq(v, loaded_encoder_state[k]))
 
-		loaded_decoder_state = loaded_brain.decoder.state_dict()
-		for k, v in brain.decoder.state_dict().items():
+		loaded_decoder_state = loaded_agent.decoder.state_dict()
+		for k, v in agent.decoder.state_dict().items():
 			assert torch.all(torch.eq(v, loaded_decoder_state[k]))
 
 	def test_reset_with_parameters(self):
-		brain = EncoderDecoderBrain({
+		agent = EncoderDecoderAgent({
 			'batch_size': 1,
 			'hidden_size': 16,
 		}, _get_train_episodes(), random_embedding_init=True)
 
-		brain_new = brain.reset_with_parameters({'hidden_size': 8})
-		self.assertEqual(brain.X, brain_new.X)
-		self.assertEqual(brain.y, brain_new.y)
-		self.assertEqual(brain.vocabulary.save(), brain_new.vocabulary.save())
-		assert torch.all(torch.eq(brain.embedding_matrix, brain_new.embedding_matrix))
-		self.assertEqual(brain_new.parameters, {**brain_new.parameters, **{'hidden_size': 8}})
-		self.assertEqual(brain.encoder.gru.hidden_size, 16)
-		self.assertEqual(brain_new.encoder.gru.hidden_size, 8)
-		self.assertEqual(brain.decoder.gru.hidden_size, 16)
-		self.assertEqual(brain_new.decoder.gru.hidden_size, 8)
+		agent_new = agent.reset_with_parameters({'hidden_size': 8})
+		self.assertEqual(agent.X, agent_new.X)
+		self.assertEqual(agent.y, agent_new.y)
+		self.assertEqual(agent.vocabulary.save(), agent_new.vocabulary.save())
+		assert torch.all(torch.eq(agent.embedding_matrix, agent_new.embedding_matrix))
+		self.assertEqual(agent_new.parameters, {**agent_new.parameters, **{'hidden_size': 8}})
+		self.assertEqual(agent.encoder.gru.hidden_size, 16)
+		self.assertEqual(agent_new.encoder.gru.hidden_size, 8)
+		self.assertEqual(agent.decoder.gru.hidden_size, 16)
+		self.assertEqual(agent_new.decoder.gru.hidden_size, 8)
 
 	def test_epoch_predict(self):
-		brain = EncoderDecoderBrain({
+		agent = EncoderDecoderAgent({
 			'batch_size': 2,
 			'hidden_size': 16,
 		}, _get_train_episodes(), random_embedding_init=True)
-		brain.epoch()
-		brain.predict('just an utterance')
+		agent.epoch()
+		agent.predict('just an utterance')
 
 	def test_long_utterances(self):
-		brain = EncoderDecoderBrain({
+		agent = EncoderDecoderAgent({
 			'batch_size': 2,
 			'hidden_size': 16,
 			'max_sentence_length': 2
 		}, _get_train_episodes(), random_embedding_init=True)
-		brain.epoch()
-		brain.predict('just an utterance')
+		agent.epoch()
+		agent.predict('just an utterance')
 
 def _get_train_episodes():
 	result = []

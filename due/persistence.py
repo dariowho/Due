@@ -1,6 +1,6 @@
 """
 This module defines the way saved entities (see `save` method of `Agent`,
-`Episode`, `Brain`, etc) are serialized to files.
+`Episode`, etc) are serialized to files.
 
 Currently, this is simply done with **YAML** or JSON.
 

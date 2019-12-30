@@ -1,6 +1,6 @@
-# DUE - A learning digital assistant
+# DUE - A framework for Conversational AI
 
-Due is an autonomous conversational agent built with three goals in mind:
+Due is a conversational agent framework built with three goals in mind:
 
 * Episode based, learning oriented: the more you talk, the better it gets
 * Action capable: user-defined actions (shell scripts) are natural components of the conversation
@@ -38,7 +38,6 @@ Lastly, download resources that are needed for the models to work (currently jus
 Once the package is installed, you can run a simple agent over XMPP with the following Python code:
 
 ```python
-from due import agent
 from due.corpora import toy as toy_corpus
 from due.xmpp import DueBot
 bot = DueBot("<XMPP_ACCOUNT_USERNAME>", "<XMPP_ACCOUNT_PASSWORD>")
@@ -60,7 +59,7 @@ This is how you run the unit test suite:
 ## Documentation
 Due is documented with [Sphinx](http://www.sphinx-doc.org). Source documentation files can be found in the `docs/` folder. Docs can be built as follows:
 
-    $ cd docs/
-    $ poetry run make html
+    cd docs/
+    poetry run make html
 
 Built HTML files will be placed in the `docs/_build/html` directory. 

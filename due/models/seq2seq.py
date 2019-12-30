@@ -32,7 +32,7 @@ from torch import optim
 import torch.nn.functional as F
 
 import due
-from due.brain import Brain
+from due.agent import Agent
 from due.event import Event
 from due.episode import extract_utterance_pairs
 from due.nlp.vocabulary import Vocabulary, get_embedding_matrix, prune_vocabulary, SOS, EOS
@@ -143,7 +143,7 @@ class AttentionDecoder(nn.Module):
 		return torch.zeros(self.num_rnn_layers, batch_size, self.hidden_size, device=DEVICE)
 
 #
-# Brain
+# Agent
 #
 
 DEFAULT_PARAMETERS = {
@@ -157,7 +157,7 @@ DEFAULT_PARAMETERS = {
 	'attention_decoder': True,
 }
 
-class EncoderDecoderBrain(Brain):
+class EncoderDecoderAgent(Agent):
 
 	def __init__(
 			self,
@@ -167,7 +167,7 @@ class EncoderDecoderBrain(Brain):
 			random_embedding_init=False,
 			_data=None, _dataset_data=None):
 		"""
-		The `EncoderDecoderBrain` implements the :class:`due.brain.Brain` class
+		The `EncoderDecoderAgent` implements the :class:`due.agent.Agent` class
 		with the EncoderDecoder framework described in this module.
 
 		Currently, the following **model parameters** are accepted:
@@ -182,23 +182,23 @@ class EncoderDecoderBrain(Brain):
 		* `teacher_forcing_ratio`: currently, this must be 1.0
 		* `attention_decoder`: add an Attention mechanism to the decoder (default: `True`)
 
-		A fresh `EncoderDecoderBrain` must be provided with a set of **initial
+		A fresh `EncoderDecoderAgent` must be provided with a set of **initial
 		episodes** to learn. It is especially important to choose carefully the
-		initial set of episodes, because they will be used to extract the Brain's
-		Vocabulary (that is, the set of words the Brain will be able to
+		initial set of episodes, because they will be used to extract the Agent's
+		Vocabulary (that is, the set of words the Agent will be able to
 		understand and produce). Vocabularies are **immutable** for the whole
-		life of the Brain instance: currently, the only way to add new words to
-		an `EncoderDecoderBrain` is to train a new Brain from scratch.
+		life of the Agent instance: currently, the only way to add new words to
+		an `EncoderDecoderAgent` is to train a new Agent from scratch.
 
 		:param model_parameters: a dictionary of parameters.
 		:type model_parameters: `dict`
 		:param initial_episodes: a list of Episodes
 		:type initial_episodes: `list` of :class:`due.episode.Episode`
-		:param vocabulary_min_count: prune words with less than this number occurrences when building the Brain's vocabulary
+		:param vocabulary_min_count: prune words with less than this number occurrences when building the Agent's vocabulary
 		:type vocabulary_min_count: `int`
-		:param _data: used internally by :meth:`EncoderDecoderBrain.load`
+		:param _data: used internally by :meth:`EncoderDecoderAgent.load`
 		:type _data: `dict`
-		:param _dataset_data: used internally by :meth:`EncoderDecoderBrain.reset_with_parameters`
+		:param _dataset_data: used internally by :meth:`EncoderDecoderAgent.reset_with_parameters`
 		:type _dataset_data: `dict`
 		"""
 
@@ -268,16 +268,24 @@ class EncoderDecoderBrain(Brain):
 		self.train_loss_history = []
 
 	def learn_episodes(self, episodes):
+		"""See :meth:`due.agent.Agent.learn_episodes`"""
 		raise NotImplementedError()
 
 	def new_episode_callback(self, episode):
+		"""See :meth:`due.agent.Agent.new_episode_callback`"""
 		self._logger.info("New episode started")
 
 	def utterance_callback(self, episode):
+		"""See :meth:`due.agent.Agent.utterance_callback`"""
 		last_utterance = episode.last_event(Event.Type.Utterance)
 		return [self.predict(last_utterance.payload)]
+	
+	def action_callback(self, episode):
+		"""See :meth:`due.agent.Agent.action_callback`"""
+		self._logger.debug("Action received.")
 
 	def leave_callback(self, episode, agent):
+		"""See :meth:`due.agent.Agent.leave_callback`"""
 		self._logger.info("Agent %s left the episode", agent)
 
 	def predict(self, sentence):
@@ -396,7 +404,7 @@ class EncoderDecoderBrain(Brain):
 	def save(self):
 		return {
 			'version': due.__version__,
-			'class': 'due.models.seq2seq.EncoderDecoderBrain',
+			'class': 'due.models.seq2seq.EncoderDecoderAgent',
 			'data': {
 				'parameters': self.parameters,
 				'dataset': self._save_dataset(),
@@ -411,7 +419,7 @@ class EncoderDecoderBrain(Brain):
 
 	def reset_with_parameters(self, new_parameters):
 		"""
-		Return a **new instance** of `EncoderDecoderBrain` with the same data
+		Return a **new instance** of `EncoderDecoderAgent` with the same data
 		as the current one, but with a fresh, randomly initialized, model.
 		Different parameters can be specified for the new model.
 		"""
@@ -419,7 +427,7 @@ class EncoderDecoderBrain(Brain):
 			'parameters': {**self.parameters, **new_parameters},
 			'dataset': self._save_dataset()
 		}
-		return EncoderDecoderBrain(_dataset_data=dataset_data)
+		return EncoderDecoderAgent(_dataset_data=dataset_data)
 
 	def _save_dataset(self):
 		return {

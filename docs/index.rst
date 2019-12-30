@@ -19,7 +19,6 @@ Due is hosted on GitHub (https://github.com/dario-chiappetta/Due) and it's maint
    episode
    event
    action
-   brain
    persistence
    nlp
    util

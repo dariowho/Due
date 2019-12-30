@@ -2,8 +2,8 @@ import logging
 import uuid
 from datetime import datetime
 
-from due.due import Due
-from due.agent import HumanAgent
+from due.models.tfidf import TfIdfAgent
+from due.models.dummy import DummyAgent
 from due.episode import LiveEpisode
 from due.event import Event
 
@@ -11,7 +11,7 @@ from sleekxmpp import ClientXMPP
 from sleekxmpp.exceptions import IqError, IqTimeout
 
 
-class DueBot(Due, ClientXMPP):
+class DueBot(TfIdfAgent, ClientXMPP):
 
 	DEFAULT_HUMAN_JID = "default@human.im"
 
@@ -32,7 +32,7 @@ class DueBot(Due, ClientXMPP):
 		:param password: The Jabber account password
 		:type password: :class:`str`
 		"""
-		Due.__init__(self)
+		TfIdfAgent.__init__(self)
 		ClientXMPP.__init__(self, jid, password)
 
 		self._humans = {}
@@ -57,6 +57,12 @@ class DueBot(Due, ClientXMPP):
 				self._live_episode = LiveEpisode(human_agent, self)
 			utterance = Event(Event.Type.Utterance, datetime.now(), str(human_agent.id), msg['body'])
 			self._live_episode.add_event(human_agent, utterance)
+
+	def utterance_callback(self, episode):
+		"""See :meth:`due.agent.Agent.utterance_callback`"""
+		self._logger.debug("Received utterance")
+		answers =super().utterance_callback(episode)
+		self.act_events(answers, episode)
 
 	def act_events(self, events, episode):
 		for e in events:
@@ -85,7 +91,7 @@ class DueBot(Due, ClientXMPP):
 
 	def _fetch_or_create_human_agent(self, jid):
 		if jid not in self._humans:
-			self._humans[jid] = HumanAgent(uuid.uuid1, jid)
+			self._humans[jid] = DummyAgent(jid)
 		return self._humans[jid]
 
 	def _handle_command_message(self, msg):

@@ -1,38 +1,34 @@
 """
 Due is a learning, modular, action-oriented dialogue agent. `Agents` are the
 entities that can take part in Episodes (:mod:`due.episode`), receiving and
-issuing Events (:mod:`due.event`) with the optional use of a Natural Language
-Understanding and Generation model (Brain, :mod:`due.brain`).
-
-This module defines the base class for Agents (:class:`due.agent.Agent`), as
-well as the :class:`due.agent.HumanAgent` implementation. That is a dummy agent
-that just logs down the Episodes and Events it receives.
+issuing Events (:mod:`due.event`).
 """
 import uuid
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
-import logging
 
-from due.episode import LiveEpisode
 from due.event import Event
+from due.util.python import dynamic_import
 
 class Agent(metaclass=ABCMeta):
 	"""
 	Participants in an Episodes are called Agents. An Agent models an unique
-	identity through its ID, and handles the communication on the channel level.
+	identity through its ID, and can be served on a number of channels using
+	packages in :mod:`due.serve`.
 
-	Optionally, a human-friendly name can be provided, which should not be taken
-	into account in Machine Learning processes.
+	Most importantly, Agent classes implement Natural Language Understanding
+	(NLU) and Generation (NLG) models, which are the core of the whole
+	conversational experience; they are meant to learn from Episodes coming from
+	a corpus, as well as from live conversations with humans or other agents.
 
 	:param agent_id: an unique ID for the Agent
-	:type agent_id: object
+	:type agent_id: `str`
 	:param name: a human-friendly name for the Agent
 	:type name: `str`
 	"""
 
-	def __init__(self, agent_id=None, name=None):
+	def __init__(self, agent_id=None):
 		self.id = agent_id if agent_id is not None else str(uuid.uuid1())
-		self.name = name
 
 	@abstractmethod
 	def save(self):
@@ -41,8 +37,11 @@ class Agent(metaclass=ABCMeta):
 		:func:`Agent.load` and can be (de)serialized using the
 		:mod:`due.persistence` module.
 
-		Note that this is an **abstract method**: subclasses of :class:`Agent`
-		must implement their own.
+		A saved Agent must be a dictionary containing exactly the following items:
+
+		* `version`: version of the class who saved the agent (often `due.__version__`)
+		* `class`: absolute import name of the Agent class (eg. `due.models.dummy.DummyAgent`)
+		* `data`: saved agent data. Will be passed to the Agent constructor's `_data` parameter
 
 		:return: an object representing the Agent
 		:rtype: object
@@ -50,21 +49,38 @@ class Agent(metaclass=ABCMeta):
 		pass
 
 	@staticmethod
-	@abstractmethod
 	def load(saved_agent):
 		"""
-		Loads an Agent from an object produced with the :meth:`Agent.save`
+		Loads an Agent from an object that was produced with the :meth:`Agent.save`
 		method.
-
-		Note that this is an **abstract method**: subclasses of :class:`Agent`
-		must implement their own.
 
 		:param saved_agent: an Agent, as it was saved by :meth:`Agent.save`
 		:type saved_agent: object
 		:return: an Agent
 		:rtype: `due.agent.Agent`
 		"""
+		class_ = dynamic_import(saved_agent['class'])
+		return class_(_data=saved_agent['data'])
+
+	@abstractmethod
+	def learn_episodes(self, episodes):
+		"""
+		Submit a list of Episodes for the :class:`Agent` to learn.
+
+		:param episodes: a list of episodes
+		:type episodes: `list` of :class:`due.episode.Episode`
+		"""
 		pass
+
+	def learn_episode(self, episode):
+		"""
+		Submit an Episode for the Agent to learn. By default, this just wraps a
+		call to :meth:`Agent.learn_episode`
+
+		:param episode: an Episode
+		:type episode: :class:`due.episode.Episode`
+		"""
+		self.learn_episodes([episode])
 
 	@abstractmethod
 	def new_episode_callback(self, new_episode):
@@ -102,15 +118,11 @@ class Agent(metaclass=ABCMeta):
 		elif event.type == Event.Type.Leave:
 			self.leave_callback(episode)
 
-
 	@abstractmethod
 	def utterance_callback(self, episode):
 		"""
 		This is a callback method that is invoked whenever a new Utterance
 		Event is acted in an Episode.
-
-		Note that this is an **abstract method**: subclasses of :class:`Agent`
-		must implement their own.
 
 		:param episode: the Episode where the Utterance was acted
 		:type episode: `due.episode.Episode`
@@ -123,9 +135,6 @@ class Agent(metaclass=ABCMeta):
 		This is a callback method that is invoked whenever a new Action Event
 		is acted in an Episode.
 
-		Note that this is an **abstract method**: subclasses of :class:`Agent`
-		must implement their own.
-
 		:param episode: the Episode where the Action was acted
 		:type episode: `due.episode.Episode`
 		"""
@@ -136,9 +145,6 @@ class Agent(metaclass=ABCMeta):
 		"""
 		This is a callback method that is invoked whenever a new Leave Event is
 		acted in an Episode.
-
-		Note that this is an **abstract method**: subclasses of :class:`Agent`
-		must implement their own.
 
 		:param episode: the Episode where the Leave Event was acted
 		:type episode: `due.episode.Episode`
@@ -198,60 +204,4 @@ class Agent(metaclass=ABCMeta):
 		episode.add_event(self, leave_event)
 
 	def __str__(self):
-		name = self.name if self.name is not None else self.id
-		return "<Agent: " + name + ">"
-
-class HumanAgent(Agent):
-	"""
-	A Human Agent is an Agent that uses a Human brain, typically sitting behind
-	a keyboard, to make sense of :class:`Episode` s and produce new
-	:class:`.Event` s.
-
-	This is the simplest kind of Agent, as it simply logs new Episodes and
-	Events, expecting the interaction to be commanded externally.
-	"""
-	def __init__(self, agent_id=None, name=None):
-		super().__init__(agent_id, name)
-		self._active_episodes = {}
-		self._logger = logging.getLogger(__name__ + '.HumanAgent')
-
-	def save(self):
-		"""See :meth:`due.agent.Agent.save`"""
-		return {'agent_id': self.id, 'name': self.name}
-
-	@staticmethod
-	def load(saved_agent):
-		"""See :meth:`due.agent.Agent.load`"""
-		return HumanAgent(**saved_agent)
-
-	def start_episode(self, other):
-		"""
-		Engages another Agent in a new conversation, thus creating a new
-		Episode.
-
-		:param other_agent: The Agent you are inviting to the conversation.
-		:type other_agent: :class:`due.agent.Agent`
-		:return: a new Episode object
-		:rtype: :class:`due.episode.LiveEpisode`
-		"""
-		result = LiveEpisode(self, other)
-		other.new_episode_callback(result)
-		return result
-
-	def new_episode_callback(self, new_episode):
-		"""See :meth:`due.agent.Agent.new_episode_callback`"""
-		self._logger.info("New episode callback: %s", str(new_episode))
-		self._active_episodes[new_episode.id] = new_episode
-
-	def utterance_callback(self, episode):
-		"""See :meth:`due.agent.Agent.utterance_callback`"""
-		self._logger.debug("Utterance received.")
-
-	def action_callback(self, episode):
-		"""See :meth:`due.agent.Agent.action_callback`"""
-		self._logger.debug("Action received.")
-
-	def leave_callback(self, episode):
-		"""See :meth:`due.agent.Agent.leave_callback`"""
-		agent = episode.last_event(Event.Type.Leave).agent
-		self._logger.debug("Agent %s left the episode.", agent)
+		return f"<Agent: {self.id}>"
