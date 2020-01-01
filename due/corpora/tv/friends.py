@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 START_DATE = datetime(year=1994, month=9, day=22)
 DELTA = timedelta(seconds=2)
 
-def episode_generator():
+def episodes():
     """
     Return the list of all the Episodes in the Friends Corpus
     """

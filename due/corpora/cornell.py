@@ -35,9 +35,9 @@ rm = resource_manager
 START_DATE = datetime(2011, 6, 15, 12, 0)
 
 def load():
-	return list(episode_generator())
+	return list(episodes())
 
-def episode_generator():
+def episodes():
 	"""
 	Returns the Cornell Movie-Dialog Corpus as a list of
 	:class:`due.episode.Episode`s

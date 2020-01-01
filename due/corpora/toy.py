@@ -14,7 +14,7 @@ from due import corpora
 from due.episode import Episode
 from due.persistence import deserialize
 
-def episode_generator():
+def episodes():
     # TODO: add support for file buffers in `deserialize`
     toy_yaml = importlib_resources.read_text(corpora, 'toy.yaml')
     with tempfile.TemporaryDirectory() as tmp_dir:

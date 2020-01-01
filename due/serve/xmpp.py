@@ -11,29 +11,24 @@ from sleekxmpp import ClientXMPP
 from sleekxmpp.exceptions import IqError, IqTimeout
 
 
-class DueBot(TfIdfAgent, ClientXMPP):
+class DueBot(ClientXMPP):
 
 	DEFAULT_HUMAN_JID = "default@human.im"
 
-	def __init__(self, jid, password):
+	def __init__(self, agent, jid, password):
 		"""
-		Creates a DueBot object with the given XMPP credentials.
+		Expose an :class:`due.agent.Agent` on XMPP with the given credentials.
 
-		Example:
-
-			>>> past_episodes = ... # a list of past episodes
-			>>> bot = DueBot("due@xmppprovider.net", "p4ssw0rd")
-			>>> bot.learn_episodes(past_episodes)
-			>>> bot.connect()
-			>>> bot.process(block=True)
-
+		:param agent: An Agent
+		:type agent: :class:`due.agent.Agent`
 		:param jid: A Jabber ID
 		:type jid: :class:`str`
 		:param password: The Jabber account password
 		:type password: :class:`str`
 		"""
-		TfIdfAgent.__init__(self)
 		ClientXMPP.__init__(self, jid, password)
+
+		self._agent = agent
 
 		self._humans = {}
 		self._live_episode = None
@@ -54,15 +49,15 @@ class DueBot(TfIdfAgent, ClientXMPP):
 			if self._handle_command_message(msg):
 				return
 			if self._live_episode is None:
-				self._live_episode = LiveEpisode(human_agent, self)
+				self._live_episode = LiveEpisode(human_agent, self._agent)
 			utterance = Event(Event.Type.Utterance, datetime.now(), str(human_agent.id), msg['body'])
 			self._live_episode.add_event(human_agent, utterance)
 
 	def utterance_callback(self, episode):
 		"""See :meth:`due.agent.Agent.utterance_callback`"""
 		self._logger.debug("Received utterance")
-		answers =super().utterance_callback(episode)
-		self.act_events(answers, episode)
+		answers = self._agent.utterance_callback(episode)
+		self._agent.act_events(answers, episode)
 
 	def act_events(self, events, episode):
 		for e in events:
@@ -87,7 +82,7 @@ class DueBot(TfIdfAgent, ClientXMPP):
 				no last message is set. This is not supposed to happen.", sentence)
 			return
 		self._last_message.reply(sentence).send()
-		episode.add_utterance(self, sentence)
+		episode.add_utterance(self._agent, sentence)
 
 	def _fetch_or_create_human_agent(self, jid):
 		if jid not in self._humans:
@@ -109,3 +104,18 @@ class DueBot(TfIdfAgent, ClientXMPP):
 			self._live_episode = None
 			self._last_message = None
 		return True
+
+def serve(agent, jid, password):
+	"""
+	Expose an :class:`due.agent.Agent` on XMPP with the given credentials.
+
+	:param agent: An Agent
+	:type agent: :class:`due.agent.Agent`
+	:param jid: A Jabber ID
+	:type jid: :class:`str`
+	:param password: The Jabber account password
+	:type password: :class:`str`
+	"""
+	bot = DueBot(agent, jid, password)
+	bot.connect()
+	bot.process(block=True)

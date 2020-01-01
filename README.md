@@ -38,17 +38,17 @@ Lastly, download resources that are needed for the models to work (currently jus
 Once the package is installed, you can run a simple agent over XMPP with the following Python code:
 
 ```python
-from due.corpora import toy as toy_corpus
-from due.xmpp import DueBot
-bot = DueBot("<XMPP_ACCOUNT_USERNAME>", "<XMPP_ACCOUNT_PASSWORD>")
+# Instantiate an Agent
+from due.models.tfidf import TfIdfAgent
+agent = TfIdfAgent()
 
 # Learn episodes from a toy corpus
-episodes = toy_corpus.episode_generator()
-bot.learn_episodes(episodes)
+from due.corpora import toy as toy_corpus
+agent.learn_episodes(toy_corpus.episodes())
     
 # Connect bot
-bot.connect()
-bot.process(block=True)
+from due.serve import xmpp
+xmpp.serve(agent, "<XMPP_ACCOUNT_USERNAME>", "<XMPP_ACCOUNT_PASSWORD>")
 ```
 
 ## Unit testing
