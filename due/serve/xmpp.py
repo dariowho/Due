@@ -1,3 +1,32 @@
+"""
+Serve a Due :class:`due.agent.Agent` over XMPP by logging into a server with an
+authorized account.
+
+.. warning::
+    XMPP support is experimental and is not yet ready to be deployed.
+    Particularly, the current implementation cannot handle more than one episode
+    at the same time, and does not tell users apart (incoming messages will be
+    regarded as if they were sent by a fake account `default@human.im`)
+
+This is how you serve a toy agent on XMPP
+
+.. code-block:: python
+    # Instantiate an Agent
+	from due.models.tfidf import TfIdfAgent
+	agent = TfIdfAgent()
+
+	# Learn episodes from a toy corpus
+	from due.corpora import toy as toy_corpus
+	agent.learn_episodes(toy_corpus.episodes())
+		
+	# Connect bot
+	from due.serve import xmpp
+	xmpp.serve(agent, "<XMPP_ACCOUNT_USERNAME>", "<XMPP_ACCOUNT_PASSWORD>")
+
+API
+===
+"""
+
 import logging
 import uuid
 from datetime import datetime
@@ -51,7 +80,7 @@ class DueBot(ClientXMPP):
 			if self._live_episode is None:
 				self._live_episode = LiveEpisode(human_agent, self._agent)
 			utterance = Event(Event.Type.Utterance, datetime.now(), str(human_agent.id), msg['body'])
-			self._live_episode.add_event(human_agent, utterance)
+			self._live_episode.add_event(utterance)
 
 	def utterance_callback(self, episode):
 		"""See :meth:`due.agent.Agent.utterance_callback`"""
@@ -100,7 +129,7 @@ class DueBot(ClientXMPP):
 			msg.reply("[you left the episode]").send()
 			human_agent = self._fetch_or_create_human_agent(DueBot.DEFAULT_HUMAN_JID)
 			leave_event = Event(Event.Type.Leave, datetime.now(), str(human_agent.id), None)
-			self._live_episode.add_event(human_agent, leave_event)
+			self._live_episode.add_event(leave_event)
 			self._live_episode = None
 			self._last_message = None
 		return True

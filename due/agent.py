@@ -106,17 +106,24 @@ class Agent(metaclass=ABCMeta):
 		* :meth:`Agent.action_callback` (:class:`due.event.Event.Type.Action`)
 		* :meth:`Agent.leave_callback` (:class:`due.event.Event.Type.Leave`)
 
-		:param event: the new Event
+		:param event: The new Event
 		:type event: :class:`due.event.Event`
-		:param episode: the Episode where the Event was acted
+		:param episode: The Episode where the Event was acted
 		:type episode: :class:`due.episode.Episode`
+		:return: A list of response Events
+		:rtype: `list` of :class:`due.event.Event`
 		"""
 		if event.type == Event.Type.Utterance:
-			self.utterance_callback(episode)
+			result = self.utterance_callback(episode)
 		elif event.type == Event.Type.Action:
-			self.action_callback(episode)
+			result = self.action_callback(episode)
 		elif event.type == Event.Type.Leave:
-			self.leave_callback(episode)
+			result = self.leave_callback(episode)
+
+		if not result:
+			result = []
+		
+		return result
 
 	@abstractmethod
 	def utterance_callback(self, episode):
@@ -126,6 +133,8 @@ class Agent(metaclass=ABCMeta):
 
 		:param episode: the Episode where the Utterance was acted
 		:type episode: `due.episode.Episode`
+		:return: A list of response Events
+		:rtype: `list` of :class:`due.event.Event`
 		"""
 		pass
 
@@ -137,6 +146,8 @@ class Agent(metaclass=ABCMeta):
 
 		:param episode: the Episode where the Action was acted
 		:type episode: `due.episode.Episode`
+		:return: A list of response Events
+		:rtype: `list` of :class:`due.event.Event`
 		"""
 		pass
 
@@ -148,6 +159,8 @@ class Agent(metaclass=ABCMeta):
 
 		:param episode: the Episode where the Leave Event was acted
 		:type episode: `due.episode.Episode`
+		:return: A list of response Events
+		:rtype: `list` of :class:`due.event.Event`
 		"""
 		pass
 
@@ -164,7 +177,7 @@ class Agent(metaclass=ABCMeta):
 			if e.type == Event.Type.Action:
 				e.payload.run()
 
-			episode.add_event(self, e)
+			episode.add_event(e)
 
 	def say(self, sentence, episode):
 		"""
@@ -179,7 +192,7 @@ class Agent(metaclass=ABCMeta):
 		:type episode: :class:`due.episode.Episode`
 		"""
 		utterance_event = Event(Event.Type.Utterance, datetime.now(), self.id, sentence)
-		episode.add_event(self, utterance_event)
+		episode.add_event(utterance_event)
 
 	def do(self, action, episode):
 		"""
@@ -191,7 +204,7 @@ class Agent(metaclass=ABCMeta):
 		"""
 		action.run()
 		action_event = Event(Event.Type.Action, datetime.now(), self.id, action)
-		episode.add_event(self, action_event)
+		episode.add_event(action_event)
 
 	def leave(self, episode):
 		"""
@@ -201,7 +214,7 @@ class Agent(metaclass=ABCMeta):
 		:type episode: :class:`due.episode.Episode`
 		"""
 		leave_event = Event(Event.Type.Leave, datetime.now(), self.id, None)
-		episode.add_event(self, leave_event)
+		episode.add_event(leave_event)
 
 	def __str__(self):
 		return f"<Agent: {self.id}>"

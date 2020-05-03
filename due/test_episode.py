@@ -37,7 +37,7 @@ class TestEpisode(unittest.TestCase):
 		self.assertEqual(len(episode.events), 0)
 
 		utterance1 = Event(Event.Type.Utterance, datetime.now(), alice.id, 'First utterance')
-		episode.add_event(alice, utterance1)
+		episode.add_event(utterance1)
 		self.assertEqual(len(episode.events), 1)
 		self.assertEqual(episode.events[0], utterance1)
 		self.assertIsNotNone(utterance1.acted)
@@ -46,7 +46,7 @@ class TestEpisode(unittest.TestCase):
 		self.assertEqual(bob.recorded_leave, 0)
 
 		utterance2 = Event(Event.Type.Utterance, datetime.now(), bob.id, 'Bob\'s answer')
-		episode.add_event(bob, utterance2)
+		episode.add_event(utterance2)
 		self.assertEqual(len(episode.events), 2)
 		self.assertEqual(episode.events[0], utterance1)
 		self.assertEqual(episode.events[1], utterance2)
@@ -56,7 +56,7 @@ class TestEpisode(unittest.TestCase):
 		self.assertEqual(bob.recorded_leave, 0)
 
 		action1 = Event(Event.Type.Action, datetime.now(), alice.id, RecordedAction())
-		episode.add_event(alice, action1)
+		episode.add_event(action1)
 		self.assertEqual(len(episode.events), 3)
 		self.assertEqual(episode.events[0], utterance1)
 		self.assertEqual(episode.events[1], utterance2)
@@ -67,7 +67,7 @@ class TestEpisode(unittest.TestCase):
 		self.assertEqual(bob.recorded_leave, 0)
 
 		leave_alice = Event(Event.Type.Leave, datetime.now(), alice.id, None)
-		episode.add_event(alice, leave_alice)
+		episode.add_event(leave_alice)
 		self.assertEqual(len(episode.events), 4)
 		self.assertEqual(episode.events[0], utterance1)
 		self.assertEqual(episode.events[1], utterance2)
@@ -87,9 +87,9 @@ class TestEpisode(unittest.TestCase):
 		action1 = Event(Event.Type.Action, datetime.now(), alice.id, RecordedAction())
 		utterance2 = Event(Event.Type.Utterance, datetime.now(), alice.id, 'Second utterance')
 
-		episode.add_event(alice, utterance1)
-		episode.add_event(alice, action1)
-		episode.add_event(alice, utterance2)
+		episode.add_event(utterance1)
+		episode.add_event(action1)
+		episode.add_event(utterance2)
 
 		self.assertEqual(episode.last_event(), utterance2)
 		self.assertEqual(episode.last_event(Event.Type.Utterance), utterance2)
@@ -116,11 +116,11 @@ class TestEpisode(unittest.TestCase):
 		episode = alice.start_episode(bob)
 
 		utterance1 = Event(Event.Type.Utterance, datetime.now(), alice.id, 'First utterance')
-		episode.add_event(alice, utterance1)
+		episode.add_event(utterance1)
 		action1 = Event(Event.Type.Action, datetime.now(), alice.id, RecordedAction())
-		episode.add_event(alice, action1)
+		episode.add_event(action1)
 		leave1 = Event(Event.Type.Leave, datetime.now(), alice.id, None)
-		episode.add_event(alice, leave1)
+		episode.add_event(leave1)
 
 		test_dir = tempfile.mkdtemp()
 		test_path = os.path.join(test_dir, 'test_episode_save_load.pkl')

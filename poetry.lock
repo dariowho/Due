@@ -668,7 +668,7 @@ python-versions = "*"
 version = "0.7.1"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Library for building powerful interactive command lines in Python"
 name = "prompt-toolkit"
 optional = false
@@ -827,7 +827,7 @@ category = "main"
 description = "YAML parser and emitter for Python"
 name = "pyyaml"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+python-versions = "*"
 version = "5.2"
 
 [[package]]
@@ -1155,7 +1155,7 @@ python-versions = "*"
 version = "0.4.2"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Measures number of Terminal column cells of wide-character codes"
 name = "wcwidth"
 optional = false
@@ -1191,7 +1191,7 @@ version = "0.6.0"
 more-itertools = "*"
 
 [metadata]
-content-hash = "557b1ba205b3c9e598816bbe97c31141ef25194e3024fc10085db8f16538ba7f"
+content-hash = "a25fc84556ad54d4324341392f48a2a715a54fe000669a97c7bc5053b961534b"
 python-versions = "^3.6"
 
 [metadata.hashes]

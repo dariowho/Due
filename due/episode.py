@@ -19,9 +19,11 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
+import due.agent
 from due.util.time import convert_datetime, parse_timedelta
 
 UTTERANCE_LABEL = 'utterance'
+MAX_EVENT_RESPONSES = 200
 
 class Episode(object):
 	"""
@@ -58,12 +60,7 @@ class Episode(object):
 		:param event_type: an event type, or a collection of types
 		:type event_type: :class:`Event.Type` or list of :class:`Event.Type`
 		"""
-		self._logger.info(event_type)
-		self._logger.info(type(event_type))
-		self._logger.info(isinstance(event_type, Event.Type))
 		event_type = event_type if not isinstance(event_type, Event.Type) else (event_type,)
-		self._logger.info(event_type)
-		self._logger.info(type(event_type))
 		for e in reversed(self.events):
 			if event_type is None or e.type in event_type:
 				return e
@@ -131,27 +128,84 @@ class LiveEpisode(Episode):
 	"""
 	def __init__(self, starter_agent, invited_agent):
 		super().__init__(starter_agent.id, invited_agent.id)
+		self._logger = logging.getLogger(__name__ + ".LiveEpisode")
 		self.starter = starter_agent
 		self.invited = invited_agent
+		self._agent_by_id = {
+			starter_agent.id: starter_agent,
+			invited_agent.id: invited_agent
+		}
 
-	def add_event(self, agent, event):
+	def add_event(self, event):
 		"""
-		Adds an Event to the LiveEpisode.
+		Adds an Event to the LiveEpisode, triggering the
+		:meth:`due.agent.Agent.event_callback` method on the other participants.
+		The callback will return a number of response Events, which will be
+		processed iteratively.
 
 		:param agent: the agent which acted the Event
 		:type agent: :class:`due.agent.Agent`
 		:param event: the event that was acted by the Agent
 		:type event: :class:`due.event.Event`
 		"""
-		self._logger.info("New %s event by %s: '%s'", event.type.name, agent, event.payload)
-		self.events.append(event)
-		event.mark_acted()
-		for a in self._other_agents(agent):
-			self._logger.debug("Notifying Agent %s.", a)
-			a.event_callback(event, self)
+		new_events = [event]
+
+		count = 0
+		while new_events:
+			e = new_events.pop(0)
+			self._logger.info("New %s event by %s: '%s'", e.type.name, e.agent, e.payload)
+			agent = self.agent_by_id(e.agent)
+			self.events.append(e)
+			e.mark_acted()
+			for a in self._other_agents(agent):
+				self._logger.info("Notifying %s", a)
+				response_events = a.event_callback(e, self)
+				new_events.extend(response_events)
+
+			count += 1
+			if count > MAX_EVENT_RESPONSES:
+				self._logger.warning("Agents reached maximum number of responses allowed for a single Event (%s). Further Events won't be notified to Agents", MAX_EVENT_RESPONSES)
+				break
+
+		self.events.extend(new_events)
+		[e.mark_acted() for e in new_events]
+
+	def agent_by_id(self, agent_id):
+		"""
+		Retrieve the :class:`due.agent.Agent` object of one of the agents that
+		are participating in the :class:`LiveEpisode`. Raise `ValueError` if the
+		given ID does not correspond to any of the agents in the Episode.
+
+		:param agent_id: ID of one of the agents in the LiveEpisode
+		:type agent_id: :class:`due.agent.Agent`
+		"""
+		if agent_id not in self._agent_by_id:
+			raise ValueError(f"Agent '{agent_id}' not found in LiveEpisode {self}")
+
+		result = self._agent_by_id[agent_id]
+		assert isinstance(result, due.agent.Agent)
+		return result
 
 	def _other_agents(self, agent):
 		return [self.starter] if agent == self.invited else [self.invited]
+
+import asyncio
+
+class AsyncLiveEpisode(LiveEpisode):
+
+	def add_event(self, event):
+		loop = asyncio.get_event_loop()
+		self.events.append(event)
+		agent = self.agent_by_id(event.agent)
+		for a in self._other_agents(agent):
+			loop.create_task(self.async_event_callback(a, event))
+
+	async def async_event_callback(self, agent, event):
+		self._logger.info("Notifying event %s to agent %s", event, agent)
+		response_events = agent.event_callback(event, self)
+		if response_events:
+			for e in response_events:
+				self.add_event(e)
 
 #
 # Save/Load Helpers

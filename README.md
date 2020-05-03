@@ -47,8 +47,8 @@ from due.corpora import toy as toy_corpus
 agent.learn_episodes(toy_corpus.episodes())
     
 # Connect bot
-from due.serve import xmpp
-xmpp.serve(agent, "<XMPP_ACCOUNT_USERNAME>", "<XMPP_ACCOUNT_PASSWORD>")
+from due.serve import console
+console.serve(agent)
 ```
 
 ## Unit testing
