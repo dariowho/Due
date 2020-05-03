@@ -140,7 +140,7 @@ class LiveEpisode(Episode):
 		"""
 		Adds an Event to the LiveEpisode, triggering the
 		:meth:`due.agent.Agent.event_callback` method on the other participants.
-		The callback will return a number of response Events, which will be
+		Response Events that are returned from the callback which will be
 		processed iteratively.
 
 		:param agent: the agent which acted the Event
@@ -189,15 +189,18 @@ class LiveEpisode(Episode):
 	def _other_agents(self, agent):
 		return [self.starter] if agent == self.invited else [self.invited]
 
-import asyncio
-
 class AsyncLiveEpisode(LiveEpisode):
+	"""
+	This is a subclass of :class:`LiveEpisode` that implement asynchronous
+	notification of new Events.
+	"""
 
 	def add_event(self, event):
-		loop = asyncio.get_event_loop()
 		self.events.append(event)
+		event.mark_acted()
 		agent = self.agent_by_id(event.agent)
 		for a in self._other_agents(agent):
+			loop = asyncio.get_event_loop()
 			loop.create_task(self.async_event_callback(a, event))
 
 	async def async_event_callback(self, agent, event):

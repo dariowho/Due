@@ -41,10 +41,10 @@ class TfIdfAgent(Agent):
 	:param _data: `dict`
 	"""
 
-	def __init__(self, parameters=None, _data=None):
+	def __init__(self, id=None, parameters=None, _data=None):
 		parameters = parameters if parameters else {}
 		self._logger = logging.getLogger(__name__ + ".TfIdfAgent")
-		super().__init__()
+		super().__init__(id)
 		self.parameters = {**DEFAULT_PARAMETERS, **parameters} if not _data else {**_data['parameters'], **parameters}
 		self._active_episodes = {}
 		self._vectorizer = TfidfVectorizer(tokenizer=_dummy_function, preprocessor=_dummy_function)
@@ -104,9 +104,9 @@ class TfIdfAgent(Agent):
 		except IndexError:
 			return None
 
-	def new_episode_callback(self, episode):
+	def new_episode_callback(self, new_episode):
 		"""See :meth:`due.agent.Agent.new_episode_callback`"""
-		self._logger.debug("New episode callback received: %s", episode)
+		self._logger.debug("New episode callback received: %s", new_episode)
 
 	def leave_callback(self, episode):
 		"""See :meth:`due.agent.Agent.leave_callback`"""

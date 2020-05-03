@@ -14,7 +14,7 @@ Thanks for stopping by, but be patient: it will take a while before the magic ha
 
 Packaging and dependencies are handled with Poetry (https://python-poetry.org/). Before installing dependencies, make sure the following requirements are satisfied:
 
-* Python 3.6+
+* Python 3.7+
 * Poetry (see https://python-poetry.org/docs/#installation)
 * libmagic (see https://github.com/ahupp/python-magic)
 
@@ -28,7 +28,7 @@ Once dependencies are installed, make sure to download Spacy's english models:
 
     poetry run python -m spacy download en
 
-Lastly, download resources that are needed for the models to work (currently just word embeddings):
+\[Optional\] If you want to use or train neural models, you will need word embeddings (this part will be moved to a separate repo in next releases):
 
     mkdir -p ~/.due/resources
     wget http://nlp.stanford.edu/data/glove.6B.zip ~/.due/resources/
