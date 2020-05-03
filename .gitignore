@@ -1,8 +1,9 @@
 # Visual Studio Code
 .vscode/
 
-# Notebooks
+# Notebooks and test code
 notebooks/
+beer.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

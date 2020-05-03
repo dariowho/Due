@@ -2,7 +2,7 @@
 Instantiate a basic agent, train it with a toy corpus, and serve it with a
 basic CLI. Usage:
 
-    poetry run python example.py
+    poetry run python run_example.py
 
 See README.md for instructions on how to setup project dependencies.
 """
