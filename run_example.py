@@ -8,6 +8,7 @@ See README.md for instructions on how to setup project dependencies.
 """
 
 if __name__ == "__main__":
+    print("Training toy agent...")
     from due.models.tfidf import TfIdfAgent
     agent = TfIdfAgent(id='due')
 
@@ -15,6 +16,7 @@ if __name__ == "__main__":
     from due.corpora import toy as toy_corpus
     agent.learn_episodes(toy_corpus.episodes())
 
+    print("Welcome! Have a chat with this toy agent, type '!q' to quit.")
     # Connect bot
     from due.serve import console
     console.serve(agent)
