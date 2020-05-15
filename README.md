@@ -1,6 +1,6 @@
 # DUE - An Episodic framework for Conversational AI
 
-Due is a conversational agent framework built with three goals in mind:
+Due is a framework for conversational agents that is built with three goals in mind:
 
 * Episode based, learning oriented: the more you talk, the better it gets
 * Action capable: user-defined actions (shell scripts) are natural components of the conversation

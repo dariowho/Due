@@ -1,6 +1,6 @@
 Agent models
 ============
-Due comes with a collection of models that are ready to use on any corpus of Episodes. 
+Due defines a framework for building and serving complex agents; it also comes with some simple models that are ready to use on any corpus of Episodes. 
 
 Dummy
 -----
@@ -10,9 +10,4 @@ Dummy
 Tf-Idf
 ------
 .. automodule:: due.models.tfidf
-   :members:
-
-seq2seq
--------
-.. automodule:: due.models.seq2seq
    :members:
