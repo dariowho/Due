@@ -3,10 +3,16 @@ This module contains utility functions to split datasets in batches. This is
 typically useful in the context of batched Gradient Descent for the optimization
 of Deep Learning models.
 """
+import logging
 import numpy as np
-import torch
-
 from due.nlp.vocabulary import EOS
+
+logger = logging.getLogger(__name__)
+
+try:
+	import torch
+except ImportError:
+	logger.warning("Importing 'batching' package with no torch installed. This may cause unexpected behavior")
 
 def batches(X, y, batch_size):
 	"""

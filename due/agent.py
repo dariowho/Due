@@ -8,6 +8,7 @@ from abc import ABCMeta, abstractmethod
 from datetime import datetime
 
 from due.event import Event
+from due import episode
 from due.util.python import dynamic_import
 
 class Agent(metaclass=ABCMeta):
@@ -95,6 +96,20 @@ class Agent(metaclass=ABCMeta):
 		:type new_episode: :class:`due.episode.Episode`
 		"""
 		pass
+
+	def start_episode(self, other):
+		"""
+		Create a new :class:`due.episode.Episode` to engage another Agent in a
+		new conversation.
+
+		:param other_agent: The Agent you are inviting to the conversation.
+		:type other_agent: :class:`due.agent.Agent`
+		:return: a new Episode object
+		:rtype: :class:`due.episode.LiveEpisode`
+		"""
+		result = episode.LiveEpisode(self, other)
+		other.new_episode_callback(result)
+		return result
 
 	def event_callback(self, event, episode):
 		"""

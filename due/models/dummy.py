@@ -26,20 +26,6 @@ class DummyAgent(Agent):
 	def learn_episodes(self, new_episodes):
 		"""Dummy agents don't learn..."""
 		pass
-	
-	def start_episode(self, other):
-		"""
-		Create a new :class:`due.episode.Episode` to engage another Agent in a
-		new conversation.
-
-		:param other_agent: The Agent you are inviting to the conversation.
-		:type other_agent: :class:`due.agent.Agent`
-		:return: a new Episode object
-		:rtype: :class:`due.episode.LiveEpisode`
-		"""
-		result = LiveEpisode(self, other)
-		other.new_episode_callback(result)
-		return result
 
 	def new_episode_callback(self, new_episode):
 		"""See :meth:`due.agent.Agent.new_episode_callback`"""

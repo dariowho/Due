@@ -24,6 +24,7 @@ dist/
 due.egg-info/
 .eggs/
 .venv/
+/pip-wheel-metadata/
 
 # Sphinx
 docs/_build

@@ -1,4 +1,4 @@
-# DUE - A framework for Conversational AI
+# DUE - An Episodic framework for Conversational AI
 
 Due is a conversational agent framework built with three goals in mind:
 
@@ -7,31 +7,22 @@ Due is a conversational agent framework built with three goals in mind:
 * Modular architecture: different Natural Language Understanding (NLU) models can be and integrated in the agents
 
 ## Work in progress!
-Thanks for stopping by, but be patient: it will take a while before the magic happens... Meanwhile, feel free to get in touch at dario DOT chi AT inventati DOT org, or check on the latest development updates here: https://github.com/dario-chiappetta/Due/projects.
+Thanks for stopping by, but be patient: it will take a while before the magic happens... Meanwhile, feel free to get in touch at dario DOT chi AT inventati DOT org.
 
 ## Setup
-**Warning**: this software is not production ready yet, good chanches are it doesn't make sense for you to try it out.
-
-Packaging and dependencies are handled with Poetry (https://python-poetry.org/). Before installing dependencies, make sure the following requirements are satisfied:
+Packaging and dependencies are managed by Poetry (https://python-poetry.org/). Before installing dependencies, make sure the following requirements are satisfied:
 
 * Python 3.7+
 * Poetry (see https://python-poetry.org/docs/#installation)
 * libmagic (see https://github.com/ahupp/python-magic)
 
-You can now setup the environment for Due as follows:
+You can now setup the environment for Due as follows (this will install dependencies in a virtualenv. Tip: if you wish to create the virtualenv inside the project folder, you can tell Poetry with `poetry config virtualenvs.in-project true`)
 
     poetry install
 
-This will create a virtual environment with all the necessary dependencies. You can add the `--no-dev` option to skip development dependencies, in case you plan on just trying out the software. By default, the virtual environment will not be created under the project's root; if you wish to change this, you can configure Poetry with `poetry config settings.virtualenvs.in-project true`.
-
-Once dependencies are installed, make sure to download Spacy's english models:
+Once dependencies are installed, make sure to download Spacy's English models
 
     poetry run python -m spacy download en
-
-\[Optional\] If you want to use or train neural models, you will need word embeddings (this part will be moved to a separate repo in next releases):
-
-    mkdir -p ~/.due/resources
-    wget http://nlp.stanford.edu/data/glove.6B.zip ~/.due/resources/
 
 ## Run
 
