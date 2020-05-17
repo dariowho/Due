@@ -24,6 +24,7 @@ pyasn1 = "=0.3.7"
 pyasn1_modules = "^0.1.5"
 importlib_resources = "^1.0"
 prompt_toolkit = "^3.0"
+python-telegram-bot = "^12.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.3"

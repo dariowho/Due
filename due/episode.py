@@ -154,7 +154,7 @@ class LiveEpisode(Episode):
 		count = 0
 		while new_events:
 			e = new_events.pop(0)
-			self._logger.info("New %s event by %s: '%s'", e.type.name, e.agent, e.payload)
+			self.echo_event(e)
 			agent = self.agent_by_id(e.agent)
 			self.events.append(e)
 			e.mark_acted()
@@ -170,6 +170,13 @@ class LiveEpisode(Episode):
 
 		self.events.extend(new_events)
 		[e.mark_acted() for e in new_events]
+
+	def echo_event(self, event):
+		"""
+		Echoes an event on an output stream. This just logs to screen by
+		default.
+		"""
+		self._logger.info("New event: '%s'", event)
 
 	def agent_by_id(self, agent_id):
 		"""

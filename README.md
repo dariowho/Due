@@ -26,7 +26,7 @@ Once dependencies are installed, make sure to download Spacy's English models
 
 ## Run
 
-Once the package is installed, you can run a simple agent over XMPP with the following Python code:
+Once the package is installed, you can run a simple agent with the following Python code:
 
 ```python
 # Instantiate an Agent
