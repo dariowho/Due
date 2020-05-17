@@ -160,7 +160,7 @@ class LiveEpisode(Episode):
 			e.mark_acted()
 			for a in self._other_agents(agent):
 				self._logger.info("Notifying %s", a)
-				response_events = a.event_callback(e, self)
+				response_events = a.event_callback(self, e)
 				new_events.extend(response_events)
 
 			count += 1
@@ -213,7 +213,7 @@ class AsyncLiveEpisode(LiveEpisode):
 
 	async def async_event_callback(self, agent, event):
 		self._logger.info("Notifying event %s to agent %s", event, agent)
-		response_events = agent.event_callback(event, self)
+		response_events = agent.event_callback(self, event)
 		if response_events:
 			for e in response_events:
 				self.add_event(e)

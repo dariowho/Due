@@ -3,7 +3,7 @@ import tempfile
 import os
 
 from due.persistence import serialize, deserialize
-from due.models.dummy import DummyAgent
+from due.agent import DummyAgent
 from due.event import *
 from due.action import Action, RecordedAction
 
@@ -39,7 +39,7 @@ class TestEvent(unittest.TestCase):
 		self.assertIsNone(e2.acted)
 
 	def test_equal(self):
-		a = DummyAgent('Alice')
+		a = DummyAgent()
 		e0 = Event(Event.Type.Utterance, T_0, None, "hello there")
 		e1 = Event(Event.Type.Utterance, T_0, None, "hello there")
 		e2 = Event(Event.Type.Action, T_0, None, "hello there")
@@ -53,7 +53,7 @@ class TestEvent(unittest.TestCase):
 		self.assertNotEqual(e0, e5)
 
 	def test_event_save(self):
-		a = DummyAgent('Alice')
+		a = DummyAgent()
 		now = datetime.now()
 		e = Event(Event.Type.Utterance, now, a.id, "hello there")
 

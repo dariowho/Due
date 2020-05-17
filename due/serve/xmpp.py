@@ -36,7 +36,7 @@ from datetime import datetime
 
 from due.agent import Agent
 from due.models.tfidf import TfIdfAgent
-from due.models.dummy import DummyAgent
+from due.agent import DummyAgent
 from due.episode import LiveEpisode
 from due.event import Event
 
@@ -112,7 +112,7 @@ class DueBot(ClientXMPP, Agent):
 		"""
 		Deprecated!
 		"""
-		self._logger.warn('deprecated use of DueBot.say(). Please use DueBot.act_events() instead.')
+		self._logger.warning('deprecated use of DueBot.say(). Please use DueBot.act_events() instead.')
 		if self._last_message is None:
 			self._logger.warning("Could not send message '%s' because \
 				no last message is set. This is not supposed to happen.", sentence)
@@ -122,7 +122,7 @@ class DueBot(ClientXMPP, Agent):
 
 	def _fetch_or_create_human_agent(self, jid):
 		if jid not in self._humans:
-			self._humans[jid] = DummyAgent(jid)
+			self._humans[jid] = DummyAgent()
 		return self._humans[jid]
 
 	def _handle_command_message(self, msg):
@@ -141,7 +141,11 @@ class DueBot(ClientXMPP, Agent):
 			self._last_message = None
 		return True
 
-	def save(self):
+	def to_dict(self):
+		raise NotImplementedError()
+
+	@staticmethod
+	def from_dict(data):
 		raise NotImplementedError()
 
 	def learn_episodes(self, episodes):

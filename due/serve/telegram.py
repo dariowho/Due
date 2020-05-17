@@ -9,7 +9,7 @@ from functools import partial
 import telegram.ext as tg
 
 from due import Event
-from due.models.dummy import DummyAgent
+from due.agent import DummyAgent
 from due.episode import LiveEpisode
 
 # from due.util.python import dynamic_import
@@ -70,7 +70,7 @@ class LiveEpisodeCache():
 
 	def get(self, user_id):
 		if user_id not in self.cache:
-			human = DummyAgent(str(user_id))
+			human = DummyAgent()
 			live_episode = human.start_episode(self.agent)
 			self.cache[user_id] = TelegramLiveEpisode(live_episode, human)
 

@@ -5,14 +5,14 @@ import tempfile
 import os
 
 from due.persistence import serialize, deserialize
-from due.models.dummy import DummyAgent
+from due.agent import DummyAgent
 from due.action import RecordedAction
 from due.event import Event
 
 class TestAgent(unittest.TestCase):
 	def setUp(self):
-		self.alice = DummyAgent("Alice")
-		self.bob = DummyAgent("Bob")
+		self.alice = DummyAgent()
+		self.bob = DummyAgent()
 		self.sample_episode = self.alice.start_episode(self.bob)
 		self.alice.say("Hi!", self.sample_episode)
 		self.bob.say("Hello", self.sample_episode)

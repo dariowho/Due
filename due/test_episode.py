@@ -3,7 +3,7 @@ import tempfile
 import os
 
 from due.persistence import serialize, deserialize
-from due.models.dummy import DummyAgent
+from due.agent import DummyAgent
 from due.event import Event
 from due.action import RecordedAction
 from due.episode import *
@@ -12,24 +12,24 @@ from datetime import datetime
 
 class RecordCallbackAgent(DummyAgent):
 
-	def __init__(self, id=None):
-		super().__init__(id)
+	def __init__(self):
+		super().__init__()
 		self.recorded_utterances = 0
 		self.recorded_actions = 0
 		self.recorded_leave = 0
 
-	def utterance_callback(self, episode):
+	def utterance_callback(self, episode, event):
 		self.recorded_utterances += 1
-	def action_callback(self, episode):
+	def action_callback(self, episode, event):
 		self.recorded_actions += 1
-	def leave_callback(self, episode):
+	def leave_callback(self, episode, event):
 		self.recorded_leave += 1
 
 class TestEpisode(unittest.TestCase):
 
 	def test_add_event(self):
-		alice = DummyAgent('Alice')
-		bob = RecordCallbackAgent('Bob')
+		alice = DummyAgent()
+		bob = RecordCallbackAgent()
 		episode = alice.start_episode(bob)
 		self.assertEqual(bob.recorded_utterances, 0)
 		self.assertEqual(bob.recorded_actions, 0)
@@ -79,8 +79,8 @@ class TestEpisode(unittest.TestCase):
 		self.assertEqual(bob.recorded_leave, 1)
 
 	def test_last_event(self):
-		alice = DummyAgent('Alice')
-		bob = DummyAgent('Bob')
+		alice = DummyAgent()
+		bob = DummyAgent()
 		episode = alice.start_episode(bob)
 
 		utterance1 = Event(Event.Type.Utterance, datetime.now(), alice.id, 'First utterance')
@@ -96,8 +96,8 @@ class TestEpisode(unittest.TestCase):
 		self.assertEqual(episode.last_event(Event.Type.Action), action1)
 
 	def test_empty_episode_save_load(self):
-		alice = DummyAgent('Alice')
-		bob = DummyAgent('Bob')
+		alice = DummyAgent()
+		bob = DummyAgent()
 
 		episode = alice.start_episode(bob)
 		test_dir = tempfile.mkdtemp()
@@ -106,13 +106,13 @@ class TestEpisode(unittest.TestCase):
 		loaded_e = Episode.load(deserialize(test_path))
 
 		self.assertEqual(loaded_e.id, episode.id)
-		self.assertEqual(loaded_e.starter_id, 'Alice') 
-		self.assertEqual(loaded_e.invited_id, 'Bob')
+		self.assertEqual(loaded_e.starter_id, episode.starter_id) 
+		self.assertEqual(loaded_e.invited_id, episode.invited_id)
 		self.assertEqual(len(loaded_e.events), 0)
 
 	def test_episode_save_load(self):
-		alice = DummyAgent('Alice')
-		bob = DummyAgent('Bob')
+		alice = DummyAgent()
+		bob = DummyAgent()
 		episode = alice.start_episode(bob)
 
 		utterance1 = Event(Event.Type.Utterance, datetime.now(), alice.id, 'First utterance')
@@ -127,16 +127,16 @@ class TestEpisode(unittest.TestCase):
 		serialize(episode.save(), test_path)
 		loaded_e = Episode.load(deserialize(test_path))
 
-		self.assertEqual(loaded_e.starter_id, 'Alice') 
-		self.assertEqual(loaded_e.invited_id, 'Bob')
+		self.assertEqual(loaded_e.starter_id, episode.starter_id) 
+		self.assertEqual(loaded_e.invited_id, episode.invited_id)
 		self.assertEqual(len(loaded_e.events), 3)
 		self.assertEqual(loaded_e.events[0], utterance1)
 		self.assertEqual(loaded_e.events[1], action1)
 		self.assertEqual(loaded_e.events[2], leave1)
 
 	def test_episode_save_load_compact(self):
-		alice = DummyAgent("Alice")
-		bob = DummyAgent("Bob")
+		alice = DummyAgent()
+		bob = DummyAgent()
 		episode = alice.start_episode(bob)
 		alice.say("Hi!", episode)
 		bob.say("Hi!", episode)

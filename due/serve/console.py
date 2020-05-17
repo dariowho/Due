@@ -5,7 +5,7 @@ from prompt_toolkit.shortcuts import prompt
 from prompt_toolkit.styles import Style
 from prompt_toolkit import print_formatted_text, HTML
 
-from due.models.dummy import DummyAgent
+from due.agent import DummyAgent
 from due.episode import AsyncLiveEpisode
 from due.util.capture_io import CaptureIO
 
@@ -44,7 +44,7 @@ def serve(agent):
 	:param agent: The Agent to serve
 	:type agent: :class:`due.Agent`
 	"""
-	human = DummyAgent('human')
+	human = DummyAgent()
 
 	live_episode = human.start_episode(agent)
 	live_episode = ConsoleLiveEpisode(live_episode, [human])

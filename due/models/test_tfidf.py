@@ -8,7 +8,7 @@ from due.episode import Episode
 from due.event import Event
 from due.persistence import serialize, deserialize
 from due.models.tfidf import TfIdfAgent
-from due.models.dummy import DummyAgent
+from due.agent import DummyAgent
 
 class TestTfIdfAgent(unittest.TestCase):
 
@@ -31,13 +31,15 @@ class TestTfIdfAgent(unittest.TestCase):
 		assert (agent._vectorizer.transform([expected_utterance]) != loaded_agent._vectorizer.transform([loaded_utterance])).nnz == 0
 		assert (agent._vectorized_past_utterances != loaded_agent._vectorized_past_utterances).nnz == 0
 
-		assert agent.utterance_callback(_get_test_episode())[0].payload, loaded_agent.utterance_callback(_get_test_episode())[0].payload
+		episode = _get_test_episode()
+		assert agent.utterance_callback(episode, episode.events[-1])[0].payload, loaded_agent.utterance_callback(_get_test_episode())[0].payload
 
 
 	def test_utterance_callback(self):
 		agent = TfIdfAgent()
 		agent.learn_episodes(_get_train_episodes())
-		result = agent.utterance_callback(_get_test_episode())
+		episode = _get_test_episode()
+		result = agent.utterance_callback(episode, episode.events[-1])
 		self.assertEqual(result[0].payload, 'bbb')
 
 	def test_tfidf_agent(self):
@@ -50,7 +52,7 @@ class TestTfIdfAgent(unittest.TestCase):
 		# Predict answer
 		e2 = alice.start_episode(bob)
 		alice.say("Hi!", e2)
-		answer_events = cb.utterance_callback(e2)
+		answer_events = cb.utterance_callback(e2, e2.events[-1])
 		self.assertEqual(len(answer_events), 1)
 		self.assertEqual(answer_events[0].payload, 'Hello')
 		
@@ -68,7 +70,7 @@ class TestTfIdfAgent(unittest.TestCase):
 
 		e2 = alice.start_episode(bob)
 		alice.say("Hi!", e2)
-		answer_events = loaded_cb.utterance_callback(e2)
+		answer_events = loaded_cb.utterance_callback(e2, e2.events[-1])
 		self.assertEqual(len(answer_events), 1)
 		self.assertEqual(answer_events[0].payload, 'Hello')
 
@@ -103,8 +105,8 @@ def _get_test_episode():
 	return e
 
 def _sample_episode():
-	alice = DummyAgent('alice')
-	bob = DummyAgent('bob')
+	alice = DummyAgent()
+	bob = DummyAgent()
 	result = alice.start_episode(bob)
 	alice.say("Hi!", result)
 	bob.say("Hello", result)

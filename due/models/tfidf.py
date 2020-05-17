@@ -10,7 +10,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
 
-import due
 from due.agent import Agent
 from due.event import Event
 from due.episode import Episode, extract_utterances
@@ -72,7 +71,6 @@ class TfIdfAgent(Agent):
 					self._past_utterances_metadata.append(_UtteranceMetadata(e, i))
 		self._vectorized_past_utterances = self._vectorizer.fit_transform(self._normalized_past_utterances)
 
-
 	def _process_utterance(self, utterance):
 		return normalize_sentence(
 			utterance,
@@ -80,18 +78,13 @@ class TfIdfAgent(Agent):
 			lemmatize=self.parameters['lemmatize_tokens']
 		)
 
-	def action_callback(self, action):
-		"""See :meth:`due.agent.Agent.action_callback`"""
-		self._logger.debug("Received action: %s", action)
-
-	def utterance_callback(self, episode):
+	def utterance_callback(self, episode, event):
 		"""See :meth:`due.agent.Agent.utterance_callback`"""
 		last_utterance = episode.last_event(Event.Type.Utterance)
 		predicted_answer = self._predict(last_utterance.payload)
 		if predicted_answer:
 			return [Event(Event.Type.Utterance, datetime.now(), self.id, predicted_answer)]
 		return []
-
 
 	def _predict(self, sentence):
 		sentence_v = self._vectorizer.transform([self._process_utterance(sentence)])
@@ -104,26 +97,24 @@ class TfIdfAgent(Agent):
 		except IndexError:
 			return None
 
-	def new_episode_callback(self, new_episode):
-		"""See :meth:`due.agent.Agent.new_episode_callback`"""
-		self._logger.debug("New episode callback received: %s", new_episode)
-
-	def leave_callback(self, episode):
+	def leave_callback(self, episode, event):
 		"""See :meth:`due.agent.Agent.leave_callback`"""
-		self.learn_episode(episode)
+		self.learn_episodes([episode])
 
-	def save(self):
-		"""See :meth:`due.agent.Agent.save`"""
+	def to_dict(self):
+		"""See :meth:`due.agent.Agent.to_dict`"""
 		return {
-			'version': due.__version__,
-			'class': 'due.models.tfidf.TfIdfAgent',
-			'data': {
-				'parameters': self.parameters,
-				'past_episodes': [e.save() for e in self._past_episodes],
-				'normalized_past_utterances': self._normalized_past_utterances,
-				'past_utterances_metadata': self._save_past_utterances_metadata()
-			}
+			'parameters': self.parameters,
+			'past_episodes': [e.save() for e in self._past_episodes],
+			'normalized_past_utterances': self._normalized_past_utterances,
+			'past_utterances_metadata': self._save_past_utterances_metadata()
 		}
+
+	@staticmethod
+	def from_dict(data):
+		"""See :meth:`due.agent.Agent.from_dict`"""
+		# TODO: refactor to take advantage of new loading model
+		return TfIdfAgent(_data=data)
 
 	def _save_past_utterances_metadata(self):
 		result = []
