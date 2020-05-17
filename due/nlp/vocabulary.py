@@ -1,6 +1,9 @@
 """
 This module implements a simple :class:`Vocabulary` class to store words and
 index them by number.
+
+API
+===
 """
 
 from collections import defaultdict
@@ -21,6 +24,12 @@ SOS = '<SOS>'
 EOS = '<EOS>'
 
 class Vocabulary():
+
+	"""
+	`Vocabulary` is a simple, serializable word index, that comes with utilities
+	for its use in Machine Learning experiments.
+	"""
+
 	def __init__(self):
 		self.word_to_index = {}
 		self.index_to_word = {}
@@ -50,12 +59,12 @@ class Vocabulary():
 
 	def index(self, word):
 		"""
-		Retrieve a word's index in the Vocabulary. Return the index of the <UNK>
+		Retrieve a word's index in the Vocabulary. Return the index of the `<UNK>`
 		token if not present.
 
 		:param word: the word to look up
 		:type word: `str`
-		:return: the word's index if existing, *<UNK>*'s index otherwise
+		:return: the word's index if existing, `<UNK>`'s index otherwise
 		:rtype: `int`
 		"""
 		if word in self.word_to_index:
@@ -112,11 +121,11 @@ def prune_vocabulary(vocabulary, min_occurrences):
 	`min_occurrences` occurrences are removed.
 
 	:param vocabulary: a Vocabulary
-	:type vocabulary: :class:`due.nlp.vocabulary.Vocabulary`
+	:type vocabulary: :class:`Vocabulary`
 	:param min_occurrences: minimum number of occurrences for a word to be kept
 	:type min_occurrences: `int`
 	:return: a pruned copy of the given vocabulary
-	:rtype: :class:`due.nlp.vocabulary.Vocabulary`
+	:rtype: :class:`Vocabulary`
 	"""
 	result = Vocabulary()
 	for index, count in iteritems(vocabulary.index_to_count):
@@ -140,7 +149,7 @@ def get_embedding_matrix(vocabulary, embeddings_stream, embedding_dim, random=Fa
 	The *Start Of String* (:data:`SOS`) token is represented as a vector of **ones**.
 
 	:param vocabulary: a Vocabulary
-	:type vocabulary: :class:`due.nlp.vocabulary.Vocabulary`
+	:type vocabulary: :class:`Vocabulary`
 	:param embeddings_stream: stream to a resource containing word embeddings in the word2vec format
 	:type embeddings_stream: *file*
 	:param embedding_dim: dimensionality of the embeddings

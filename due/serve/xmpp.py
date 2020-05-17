@@ -3,6 +3,7 @@ Serve a Due :class:`due.agent.Agent` over XMPP by logging into a server with an
 authorized account.
 
 .. warning::
+
 	XMPP support is for testing purposes and is not production ready.
 	Particularly, the current implementation is obsolete, it cannot handle more
 	than one episode at the same time, and does not tell users apart (incoming
@@ -12,6 +13,7 @@ authorized account.
 This is how you serve a toy agent on XMPP
 
 .. code-block:: python
+
     # Instantiate an Agent
 	from due.models.tfidf import TfIdfAgent
 	agent = TfIdfAgent()

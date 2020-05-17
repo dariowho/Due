@@ -15,14 +15,12 @@ Due is hosted on GitHub (https://github.com/dario-chiappetta/Due) and it's maint
    :maxdepth: 2
    :caption: Contents:
    
-   agent
-   episode
-   event
-   action
-   persistence
+   framework
+   models
+   serving
+   corpora
    nlp
    util
-   models
 
 Indices and tables
 ==================

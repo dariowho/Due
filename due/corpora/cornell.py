@@ -4,13 +4,13 @@ http://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html
 
 There are some givens to consider when using this corpus:
 
-* No **timestamp** information is provided in the dataset. The first returned
-episode symbolically starts the day the paper was published, 15/6/2011, at noon,
-all the following events through the episodes are placed 1 second apart one
-another. 
+* No **timestamp** information is provided in the dataset. The first returned \
+episode symbolically starts the day the paper was published, 15/6/2011, at noon, \
+all the following events through the episodes are placed 1 second apart one \
+another.
 * The corpus only contains **one on one** conversations only.
-* Context-wise, episodes are **not self-contained**. That is, an episode in the
-corpus may start in the middle of a longer conversation, and may end before
+* Context-wise, episodes are **not self-contained**. That is, an episode in the \
+corpus may start in the middle of a longer conversation, and may end before \
 that conversation is finished.
 """
 
@@ -40,7 +40,7 @@ def load():
 def episodes():
 	"""
 	Returns the Cornell Movie-Dialog Corpus as a list of
-	:class:`due.episode.Episode`s
+	:class:`due.episode.Episode`\ s
 
 	TODO: return agents dictionary
 
